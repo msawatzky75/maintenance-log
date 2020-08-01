@@ -72,7 +72,7 @@ type Vehicle {
 }
 
 type Query {
-	user(email: String): User!
+	getUser(email: String): User!
 }
 
 schema {
