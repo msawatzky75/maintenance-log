@@ -98,6 +98,7 @@ github.com/mitchellh/mapstructure v0.0.0-20180203102830-a4e142e9c047 h1:zCoDWFD5
 github.com/mitchellh/mapstructure v0.0.0-20180203102830-a4e142e9c047/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/msawatzky75/maintenence-log v0.0.0-20200730043143-7ceb6195b892 h1:a9H9KDAU6YI3nOA1gUbUVqXL2GDp8k9Jx/IUjoRAQes=
 github.com/msawatzky75/maintenence-log v0.0.0-20200801215300-f60ef40c77ac h1:C0c5qUXwN4ZV7BckM17XKJw6vxs+B6voYpr2Aq6H32A=
+github.com/msawatzky75/maintenence-log v0.0.0-20200803055326-013920dc5bd0 h1:8Fg4ZzTYTsZmRVbLJnqLoR7RAGmXExw9KHrIOT7MDkw=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.10.1/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.7.0/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=

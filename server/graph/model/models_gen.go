@@ -17,57 +17,31 @@ type DistanceValue struct {
 	Type  *DistanceUnit `json:"type"`
 }
 
+type DistanceValueInput struct {
+	Value int          `json:"value"`
+	Type  DistanceUnit `json:"type"`
+}
+
 type FluidValue struct {
 	Value *int       `json:"value"`
 	Type  *FluidUnit `json:"type"`
 }
-
-type FuelLog struct {
-	ID         string         `json:"id"`
-	Date       int            `json:"date"`
-	Vehicle    *Vehicle       `json:"vehicle"`
-	Notes      string         `json:"notes"`
-	Trip       *DistanceValue `json:"trip"`
-	Grade      *int           `json:"grade"`
-	FuelAmount *FluidValue    `json:"fuelAmount"`
-	FuelPrice  *MoneyValue    `json:"fuelPrice"`
-}
-
-func (FuelLog) IsLog() {}
-
-type MaintenanceLog struct {
-	ID      string   `json:"id"`
-	Date    int      `json:"date"`
-	Vehicle *Vehicle `json:"vehicle"`
-	Notes   string   `json:"notes"`
-}
-
-func (MaintenanceLog) IsLog() {}
 
 type MoneyValue struct {
 	Value *int       `json:"value"`
 	Type  *MoneyUnit `json:"type"`
 }
 
-type OilChangeLog struct {
-	ID      string   `json:"id"`
-	Date    int      `json:"date"`
-	Vehicle *Vehicle `json:"vehicle"`
-	Notes   string   `json:"notes"`
-}
-
-func (OilChangeLog) IsLog() {}
-
 type UserInput struct {
 	Email string `json:"email"`
 }
 
-type Vehicle struct {
-	ID       string         `json:"id"`
-	Make     string         `json:"make"`
-	Model    string         `json:"model"`
-	User     *User          `json:"user"`
-	Odometer *DistanceValue `json:"odometer"`
+type VehicleInput struct {
+	Make     string              `json:"make"`
+	Model    string              `json:"model"`
+	Year     int                 `json:"year"`
+	Odometer *DistanceValueInput `json:"odometer"`
+	UserID   string              `json:"userId"`
 }
 
 type DistanceUnit string

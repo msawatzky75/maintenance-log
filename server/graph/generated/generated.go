@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -36,10 +37,14 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	FuelLog() FuelLogResolver
+	MaintenanceLog() MaintenanceLogResolver
 	Mutation() MutationResolver
+	OilChangeLog() OilChangeLogResolver
 	Query() QueryResolver
 	User() UserResolver
 	UserPreference() UserPreferenceResolver
+	Vehicle() VehicleResolver
 }
 
 type DirectiveRoot struct {
@@ -57,21 +62,27 @@ type ComplexityRoot struct {
 	}
 
 	FuelLog struct {
+		CreatedAt  func(childComplexity int) int
 		Date       func(childComplexity int) int
+		DeletedAt  func(childComplexity int) int
 		FuelAmount func(childComplexity int) int
 		FuelPrice  func(childComplexity int) int
 		Grade      func(childComplexity int) int
 		ID         func(childComplexity int) int
 		Notes      func(childComplexity int) int
 		Trip       func(childComplexity int) int
+		UpdatedAt  func(childComplexity int) int
 		Vehicle    func(childComplexity int) int
 	}
 
 	MaintenanceLog struct {
-		Date    func(childComplexity int) int
-		ID      func(childComplexity int) int
-		Notes   func(childComplexity int) int
-		Vehicle func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		Date      func(childComplexity int) int
+		DeletedAt func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Notes     func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
+		Vehicle   func(childComplexity int) int
 	}
 
 	MoneyValue struct {
@@ -80,14 +91,18 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateUser func(childComplexity int, data model.UserInput) int
+		CreateUser    func(childComplexity int, data model.UserInput) int
+		CreateVehicle func(childComplexity int, data model.VehicleInput) int
 	}
 
 	OilChangeLog struct {
-		Date    func(childComplexity int) int
-		ID      func(childComplexity int) int
-		Notes   func(childComplexity int) int
-		Vehicle func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		Date      func(childComplexity int) int
+		DeletedAt func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Notes     func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
+		Vehicle   func(childComplexity int) int
 	}
 
 	Query struct {
@@ -95,10 +110,13 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
+		CreatedAt  func(childComplexity int) int
+		DeletedAt  func(childComplexity int) int
 		Email      func(childComplexity int) int
 		ID         func(childComplexity int) int
-		Logs       func(childComplexity int, startDate int, endDate int) int
+		Logs       func(childComplexity int, startDate time.Time, endDate time.Time) int
 		Preference func(childComplexity int) int
+		UpdatedAt  func(childComplexity int) int
 		Vehicles   func(childComplexity int) int
 	}
 
@@ -110,16 +128,36 @@ type ComplexityRoot struct {
 	}
 
 	Vehicle struct {
-		ID       func(childComplexity int) int
-		Make     func(childComplexity int) int
-		Model    func(childComplexity int) int
-		Odometer func(childComplexity int) int
-		User     func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		DeletedAt func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Make      func(childComplexity int) int
+		Model     func(childComplexity int) int
+		Odometer  func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
+		User      func(childComplexity int) int
+		Year      func(childComplexity int) int
 	}
 }
 
+type FuelLogResolver interface {
+	ID(ctx context.Context, obj *model.FuelLog) (string, error)
+
+	Vehicle(ctx context.Context, obj *model.FuelLog) (*model.Vehicle, error)
+}
+type MaintenanceLogResolver interface {
+	ID(ctx context.Context, obj *model.MaintenanceLog) (string, error)
+
+	Vehicle(ctx context.Context, obj *model.MaintenanceLog) (*model.Vehicle, error)
+}
 type MutationResolver interface {
 	CreateUser(ctx context.Context, data model.UserInput) (*model.User, error)
+	CreateVehicle(ctx context.Context, data model.VehicleInput) (*model.Vehicle, error)
+}
+type OilChangeLogResolver interface {
+	ID(ctx context.Context, obj *model.OilChangeLog) (string, error)
+
+	Vehicle(ctx context.Context, obj *model.OilChangeLog) (*model.Vehicle, error)
 }
 type QueryResolver interface {
 	GetUser(ctx context.Context, id *string) (*model.User, error)
@@ -127,12 +165,17 @@ type QueryResolver interface {
 type UserResolver interface {
 	ID(ctx context.Context, obj *model.User) (string, error)
 
-	Logs(ctx context.Context, obj *model.User, startDate int, endDate int) ([]model.Log, error)
+	Logs(ctx context.Context, obj *model.User, startDate time.Time, endDate time.Time) ([]model.Log, error)
 	Vehicles(ctx context.Context, obj *model.User) ([]*model.Vehicle, error)
 	Preference(ctx context.Context, obj *model.User) (*model.UserPreference, error)
 }
 type UserPreferenceResolver interface {
 	Vehicle(ctx context.Context, obj *model.UserPreference) (*model.Vehicle, error)
+}
+type VehicleResolver interface {
+	ID(ctx context.Context, obj *model.Vehicle) (string, error)
+
+	User(ctx context.Context, obj *model.Vehicle) (*model.User, error)
 }
 
 type executableSchema struct {
@@ -178,12 +221,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.FluidValue.Value(childComplexity), true
 
+	case "FuelLog.createdAt":
+		if e.complexity.FuelLog.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.FuelLog.CreatedAt(childComplexity), true
+
 	case "FuelLog.date":
 		if e.complexity.FuelLog.Date == nil {
 			break
 		}
 
 		return e.complexity.FuelLog.Date(childComplexity), true
+
+	case "FuelLog.deletedAt":
+		if e.complexity.FuelLog.DeletedAt == nil {
+			break
+		}
+
+		return e.complexity.FuelLog.DeletedAt(childComplexity), true
 
 	case "FuelLog.fuelAmount":
 		if e.complexity.FuelLog.FuelAmount == nil {
@@ -227,6 +284,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.FuelLog.Trip(childComplexity), true
 
+	case "FuelLog.updatedAt":
+		if e.complexity.FuelLog.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.FuelLog.UpdatedAt(childComplexity), true
+
 	case "FuelLog.vehicle":
 		if e.complexity.FuelLog.Vehicle == nil {
 			break
@@ -234,12 +298,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.FuelLog.Vehicle(childComplexity), true
 
+	case "MaintenanceLog.createdAt":
+		if e.complexity.MaintenanceLog.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.MaintenanceLog.CreatedAt(childComplexity), true
+
 	case "MaintenanceLog.date":
 		if e.complexity.MaintenanceLog.Date == nil {
 			break
 		}
 
 		return e.complexity.MaintenanceLog.Date(childComplexity), true
+
+	case "MaintenanceLog.deletedAt":
+		if e.complexity.MaintenanceLog.DeletedAt == nil {
+			break
+		}
+
+		return e.complexity.MaintenanceLog.DeletedAt(childComplexity), true
 
 	case "MaintenanceLog.id":
 		if e.complexity.MaintenanceLog.ID == nil {
@@ -254,6 +332,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MaintenanceLog.Notes(childComplexity), true
+
+	case "MaintenanceLog.updatedAt":
+		if e.complexity.MaintenanceLog.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.MaintenanceLog.UpdatedAt(childComplexity), true
 
 	case "MaintenanceLog.vehicle":
 		if e.complexity.MaintenanceLog.Vehicle == nil {
@@ -288,12 +373,38 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateUser(childComplexity, args["data"].(model.UserInput)), true
 
+	case "Mutation.createVehicle":
+		if e.complexity.Mutation.CreateVehicle == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createVehicle_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateVehicle(childComplexity, args["data"].(model.VehicleInput)), true
+
+	case "OilChangeLog.createdAt":
+		if e.complexity.OilChangeLog.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.OilChangeLog.CreatedAt(childComplexity), true
+
 	case "OilChangeLog.date":
 		if e.complexity.OilChangeLog.Date == nil {
 			break
 		}
 
 		return e.complexity.OilChangeLog.Date(childComplexity), true
+
+	case "OilChangeLog.deletedAt":
+		if e.complexity.OilChangeLog.DeletedAt == nil {
+			break
+		}
+
+		return e.complexity.OilChangeLog.DeletedAt(childComplexity), true
 
 	case "OilChangeLog.id":
 		if e.complexity.OilChangeLog.ID == nil {
@@ -308,6 +419,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.OilChangeLog.Notes(childComplexity), true
+
+	case "OilChangeLog.updatedAt":
+		if e.complexity.OilChangeLog.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.OilChangeLog.UpdatedAt(childComplexity), true
 
 	case "OilChangeLog.vehicle":
 		if e.complexity.OilChangeLog.Vehicle == nil {
@@ -327,6 +445,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetUser(childComplexity, args["id"].(*string)), true
+
+	case "User.createdAt":
+		if e.complexity.User.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.User.CreatedAt(childComplexity), true
+
+	case "User.deletedAt":
+		if e.complexity.User.DeletedAt == nil {
+			break
+		}
+
+		return e.complexity.User.DeletedAt(childComplexity), true
 
 	case "User.email":
 		if e.complexity.User.Email == nil {
@@ -352,7 +484,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.User.Logs(childComplexity, args["startDate"].(int), args["endDate"].(int)), true
+		return e.complexity.User.Logs(childComplexity, args["startDate"].(time.Time), args["endDate"].(time.Time)), true
 
 	case "User.preference":
 		if e.complexity.User.Preference == nil {
@@ -360,6 +492,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Preference(childComplexity), true
+
+	case "User.updatedAt":
+		if e.complexity.User.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.User.UpdatedAt(childComplexity), true
 
 	case "User.vehicles":
 		if e.complexity.User.Vehicles == nil {
@@ -396,6 +535,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.UserPreference.Vehicle(childComplexity), true
 
+	case "Vehicle.createdAt":
+		if e.complexity.Vehicle.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Vehicle.CreatedAt(childComplexity), true
+
+	case "Vehicle.deletedAt":
+		if e.complexity.Vehicle.DeletedAt == nil {
+			break
+		}
+
+		return e.complexity.Vehicle.DeletedAt(childComplexity), true
+
 	case "Vehicle.id":
 		if e.complexity.Vehicle.ID == nil {
 			break
@@ -424,12 +577,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Vehicle.Odometer(childComplexity), true
 
+	case "Vehicle.updatedAt":
+		if e.complexity.Vehicle.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Vehicle.UpdatedAt(childComplexity), true
+
 	case "Vehicle.user":
 		if e.complexity.Vehicle.User == nil {
 			break
 		}
 
 		return e.complexity.Vehicle.User(childComplexity), true
+
+	case "Vehicle.year":
+		if e.complexity.Vehicle.Year == nil {
+			break
+		}
+
+		return e.complexity.Vehicle.Year(childComplexity), true
 
 	}
 	return 0, false
@@ -495,7 +662,54 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	&ast.Source{Name: "graph/models.graphqls", Input: `enum DistanceUnit { Kilometre Mile }
+	&ast.Source{Name: "graph/schema/logs.graphqls", Input: `interface Log {
+	id: String!
+	createdAt: Time!
+	updatedAt: Time
+	deletedAt: Time
+
+	date: Time!
+	vehicle: Vehicle!
+	notes: String!
+}
+
+type MaintenanceLog implements Log {
+	id: String!
+	createdAt: Time!
+	updatedAt: Time
+	deletedAt: Time
+
+	date: Time!
+	vehicle: Vehicle!
+	notes: String!
+}
+
+type FuelLog implements Log {
+	id: String!
+	createdAt: Time!
+	updatedAt: Time
+	deletedAt: Time
+
+	date: Time!
+	vehicle: Vehicle!
+	notes: String!
+	trip: DistanceValue
+	grade: Int
+	fuelAmount: FluidValue
+	fuelPrice: MoneyValue
+}
+
+type OilChangeLog implements Log {
+	id: String!
+	createdAt: Time!
+	updatedAt: Time
+	deletedAt: Time
+
+	date: Time!
+	vehicle: Vehicle!
+	notes: String!
+}`, BuiltIn: false},
+	&ast.Source{Name: "graph/schema/models.graphqls", Input: `enum DistanceUnit { Kilometre Mile }
 type DistanceValue {
 	value: Int
 	type: DistanceUnit
@@ -512,43 +726,49 @@ type MoneyValue {
 	value: Int
 	type: MoneyUnit
 }
+`, BuiltIn: false},
+	&ast.Source{Name: "graph/schema/schema.graphqls", Input: `scalar Time
 
-interface Log {
-	id: String!
-	date: Int!
-	vehicle: Vehicle!
-	notes: String!
-}
-
-type MaintenanceLog implements Log {
-	id: String!
-	date: Int!
-	vehicle: Vehicle!
-	notes: String!
-}
-
-type FuelLog implements Log {
-	id: String!
-	date: Int!
-	vehicle: Vehicle!
-	notes: String!
-	trip: DistanceValue
-	grade: Int
-	fuelAmount: FluidValue
-	fuelPrice: MoneyValue
-}
-
-type OilChangeLog implements Log {
-	id: String!
-	date: Int!
-	vehicle: Vehicle!
-	notes: String!
-}
-
-type User {
-	id: String!
+input UserInput {
 	email: String!
-	logs(startDate: Int!, endDate: Int!): [Log!]
+}
+
+input VehicleInput {
+	make: String!
+	model: String!
+	year: Int!
+	odometer: DistanceValueInput!
+	userId: String!
+}
+
+input DistanceValueInput {
+	value: Int!
+	type: DistanceUnit!
+}
+
+type Query {
+	getUser(id: String): User!
+}
+
+type Mutation {
+	createUser(data: UserInput!): User!
+	createVehicle(data: VehicleInput!): Vehicle!
+}
+
+schema {
+	query: Query
+	mutation: Mutation
+}
+
+`, BuiltIn: false},
+	&ast.Source{Name: "graph/schema/user.graphqls", Input: `type User {
+	id: String!
+	createdAt: Time!
+	updatedAt: Time
+	deletedAt: Time
+
+	email: String!
+	logs(startDate: Time!, endDate: Time!): [Log!]
 	vehicles: [Vehicle!]
 	preference: UserPreference
 }
@@ -562,29 +782,16 @@ type UserPreference {
 
 type Vehicle {
 	id: String!
+	createdAt: Time!
+	updatedAt: Time
+	deletedAt: Time
+
 	make: String!
 	model: String!
+	year: Int!
 	user: User!
 	odometer: DistanceValue!
 }
-`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema.graphqls", Input: `input UserInput {
-	email: String!
-}
-
-type Query {
-	getUser(id: String): User!
-}
-
-type Mutation {
-	createUser(data: UserInput!): User!
-}
-
-schema {
-	query: Query
-	mutation: Mutation
-}
-
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -599,6 +806,20 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 	var arg0 model.UserInput
 	if tmp, ok := rawArgs["data"]; ok {
 		arg0, err = ec.unmarshalNUserInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐUserInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["data"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createVehicle_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.VehicleInput
+	if tmp, ok := rawArgs["data"]; ok {
+		arg0, err = ec.unmarshalNVehicleInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐVehicleInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -638,17 +859,17 @@ func (ec *executionContext) field_Query_getUser_args(ctx context.Context, rawArg
 func (ec *executionContext) field_User_logs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 int
+	var arg0 time.Time
 	if tmp, ok := rawArgs["startDate"]; ok {
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		arg0, err = ec.unmarshalNTime2timeᚐTime(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["startDate"] = arg0
-	var arg1 int
+	var arg1 time.Time
 	if tmp, ok := rawArgs["endDate"]; ok {
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		arg1, err = ec.unmarshalNTime2timeᚐTime(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -828,13 +1049,13 @@ func (ec *executionContext) _FuelLog_id(ctx context.Context, field graphql.Colle
 		Object:   "FuelLog",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return ec.resolvers.FuelLog().ID(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -849,6 +1070,102 @@ func (ec *executionContext) _FuelLog_id(ctx context.Context, field graphql.Colle
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FuelLog_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.FuelLog) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "FuelLog",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FuelLog_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.FuelLog) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "FuelLog",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalOTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FuelLog_deletedAt(ctx context.Context, field graphql.CollectedField, obj *model.FuelLog) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "FuelLog",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DeletedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _FuelLog_date(ctx context.Context, field graphql.CollectedField, obj *model.FuelLog) (ret graphql.Marshaler) {
@@ -880,9 +1197,9 @@ func (ec *executionContext) _FuelLog_date(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*time.Time)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _FuelLog_vehicle(ctx context.Context, field graphql.CollectedField, obj *model.FuelLog) (ret graphql.Marshaler) {
@@ -896,13 +1213,13 @@ func (ec *executionContext) _FuelLog_vehicle(ctx context.Context, field graphql.
 		Object:   "FuelLog",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Vehicle, nil
+		return ec.resolvers.FuelLog().Vehicle(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1088,13 +1405,13 @@ func (ec *executionContext) _MaintenanceLog_id(ctx context.Context, field graphq
 		Object:   "MaintenanceLog",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return ec.resolvers.MaintenanceLog().ID(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1109,6 +1426,102 @@ func (ec *executionContext) _MaintenanceLog_id(ctx context.Context, field graphq
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _MaintenanceLog_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.MaintenanceLog) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "MaintenanceLog",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _MaintenanceLog_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.MaintenanceLog) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "MaintenanceLog",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalOTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _MaintenanceLog_deletedAt(ctx context.Context, field graphql.CollectedField, obj *model.MaintenanceLog) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "MaintenanceLog",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DeletedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _MaintenanceLog_date(ctx context.Context, field graphql.CollectedField, obj *model.MaintenanceLog) (ret graphql.Marshaler) {
@@ -1140,9 +1553,9 @@ func (ec *executionContext) _MaintenanceLog_date(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*time.Time)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _MaintenanceLog_vehicle(ctx context.Context, field graphql.CollectedField, obj *model.MaintenanceLog) (ret graphql.Marshaler) {
@@ -1156,13 +1569,13 @@ func (ec *executionContext) _MaintenanceLog_vehicle(ctx context.Context, field g
 		Object:   "MaintenanceLog",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Vehicle, nil
+		return ec.resolvers.MaintenanceLog().Vehicle(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1316,7 +1729,82 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 	return ec.marshalNUser2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createVehicle(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createVehicle_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateVehicle(rctx, args["data"].(model.VehicleInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Vehicle)
+	fc.Result = res
+	return ec.marshalNVehicle2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐVehicle(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _OilChangeLog_id(ctx context.Context, field graphql.CollectedField, obj *model.OilChangeLog) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "OilChangeLog",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.OilChangeLog().ID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _OilChangeLog_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.OilChangeLog) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1333,7 +1821,7 @@ func (ec *executionContext) _OilChangeLog_id(ctx context.Context, field graphql.
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return obj.CreatedAt, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1345,9 +1833,71 @@ func (ec *executionContext) _OilChangeLog_id(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _OilChangeLog_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.OilChangeLog) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "OilChangeLog",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalOTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _OilChangeLog_deletedAt(ctx context.Context, field graphql.CollectedField, obj *model.OilChangeLog) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "OilChangeLog",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DeletedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OilChangeLog_date(ctx context.Context, field graphql.CollectedField, obj *model.OilChangeLog) (ret graphql.Marshaler) {
@@ -1379,9 +1929,9 @@ func (ec *executionContext) _OilChangeLog_date(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*time.Time)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OilChangeLog_vehicle(ctx context.Context, field graphql.CollectedField, obj *model.OilChangeLog) (ret graphql.Marshaler) {
@@ -1395,13 +1945,13 @@ func (ec *executionContext) _OilChangeLog_vehicle(ctx context.Context, field gra
 		Object:   "OilChangeLog",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Vehicle, nil
+		return ec.resolvers.OilChangeLog().Vehicle(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1596,6 +2146,102 @@ func (ec *executionContext) _User_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _User_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalOTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_deletedAt(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DeletedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _User_email(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1654,7 +2300,7 @@ func (ec *executionContext) _User_logs(ctx context.Context, field graphql.Collec
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.User().Logs(rctx, obj, args["startDate"].(int), args["endDate"].(int))
+		return ec.resolvers.User().Logs(rctx, obj, args["startDate"].(time.Time), args["endDate"].(time.Time))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1865,13 +2511,13 @@ func (ec *executionContext) _Vehicle_id(ctx context.Context, field graphql.Colle
 		Object:   "Vehicle",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return ec.resolvers.Vehicle().ID(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1886,6 +2532,102 @@ func (ec *executionContext) _Vehicle_id(ctx context.Context, field graphql.Colle
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Vehicle_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Vehicle) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Vehicle",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Vehicle_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Vehicle) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Vehicle",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalOTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Vehicle_deletedAt(ctx context.Context, field graphql.CollectedField, obj *model.Vehicle) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Vehicle",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DeletedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Vehicle_make(ctx context.Context, field graphql.CollectedField, obj *model.Vehicle) (ret graphql.Marshaler) {
@@ -1956,7 +2698,7 @@ func (ec *executionContext) _Vehicle_model(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Vehicle_user(ctx context.Context, field graphql.CollectedField, obj *model.Vehicle) (ret graphql.Marshaler) {
+func (ec *executionContext) _Vehicle_year(ctx context.Context, field graphql.CollectedField, obj *model.Vehicle) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1973,7 +2715,41 @@ func (ec *executionContext) _Vehicle_user(ctx context.Context, field graphql.Col
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.User, nil
+		return obj.Year, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Vehicle_user(ctx context.Context, field graphql.CollectedField, obj *model.Vehicle) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Vehicle",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Vehicle().User(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3079,6 +3855,30 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputDistanceValueInput(ctx context.Context, obj interface{}) (model.DistanceValueInput, error) {
+	var it model.DistanceValueInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "value":
+			var err error
+			it.Value, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "type":
+			var err error
+			it.Type, err = ec.unmarshalNDistanceUnit2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUserInput(ctx context.Context, obj interface{}) (model.UserInput, error) {
 	var it model.UserInput
 	var asMap = obj.(map[string]interface{})
@@ -3088,6 +3888,48 @@ func (ec *executionContext) unmarshalInputUserInput(ctx context.Context, obj int
 		case "email":
 			var err error
 			it.Email, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputVehicleInput(ctx context.Context, obj interface{}) (model.VehicleInput, error) {
+	var it model.VehicleInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "make":
+			var err error
+			it.Make, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "model":
+			var err error
+			it.Model, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "year":
+			var err error
+			it.Year, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "odometer":
+			var err error
+			it.Odometer, err = ec.unmarshalNDistanceValueInput2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceValueInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "userId":
+			var err error
+			it.UserID, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3199,24 +4041,51 @@ func (ec *executionContext) _FuelLog(ctx context.Context, sel ast.SelectionSet, 
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("FuelLog")
 		case "id":
-			out.Values[i] = ec._FuelLog_id(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._FuelLog_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "createdAt":
+			out.Values[i] = ec._FuelLog_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "updatedAt":
+			out.Values[i] = ec._FuelLog_updatedAt(ctx, field, obj)
+		case "deletedAt":
+			out.Values[i] = ec._FuelLog_deletedAt(ctx, field, obj)
 		case "date":
 			out.Values[i] = ec._FuelLog_date(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "vehicle":
-			out.Values[i] = ec._FuelLog_vehicle(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._FuelLog_vehicle(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "notes":
 			out.Values[i] = ec._FuelLog_notes(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "trip":
 			out.Values[i] = ec._FuelLog_trip(ctx, field, obj)
@@ -3249,24 +4118,51 @@ func (ec *executionContext) _MaintenanceLog(ctx context.Context, sel ast.Selecti
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("MaintenanceLog")
 		case "id":
-			out.Values[i] = ec._MaintenanceLog_id(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._MaintenanceLog_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "createdAt":
+			out.Values[i] = ec._MaintenanceLog_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "updatedAt":
+			out.Values[i] = ec._MaintenanceLog_updatedAt(ctx, field, obj)
+		case "deletedAt":
+			out.Values[i] = ec._MaintenanceLog_deletedAt(ctx, field, obj)
 		case "date":
 			out.Values[i] = ec._MaintenanceLog_date(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "vehicle":
-			out.Values[i] = ec._MaintenanceLog_vehicle(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._MaintenanceLog_vehicle(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "notes":
 			out.Values[i] = ec._MaintenanceLog_notes(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -3325,6 +4221,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createVehicle":
+			out.Values[i] = ec._Mutation_createVehicle(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3348,24 +4249,51 @@ func (ec *executionContext) _OilChangeLog(ctx context.Context, sel ast.Selection
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("OilChangeLog")
 		case "id":
-			out.Values[i] = ec._OilChangeLog_id(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._OilChangeLog_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "createdAt":
+			out.Values[i] = ec._OilChangeLog_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "updatedAt":
+			out.Values[i] = ec._OilChangeLog_updatedAt(ctx, field, obj)
+		case "deletedAt":
+			out.Values[i] = ec._OilChangeLog_deletedAt(ctx, field, obj)
 		case "date":
 			out.Values[i] = ec._OilChangeLog_date(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "vehicle":
-			out.Values[i] = ec._OilChangeLog_vehicle(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._OilChangeLog_vehicle(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "notes":
 			out.Values[i] = ec._OilChangeLog_notes(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -3447,6 +4375,15 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 				}
 				return res
 			})
+		case "createdAt":
+			out.Values[i] = ec._User_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "updatedAt":
+			out.Values[i] = ec._User_updatedAt(ctx, field, obj)
+		case "deletedAt":
+			out.Values[i] = ec._User_deletedAt(ctx, field, obj)
 		case "email":
 			out.Values[i] = ec._User_email(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -3547,29 +4484,61 @@ func (ec *executionContext) _Vehicle(ctx context.Context, sel ast.SelectionSet, 
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Vehicle")
 		case "id":
-			out.Values[i] = ec._Vehicle_id(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Vehicle_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "createdAt":
+			out.Values[i] = ec._Vehicle_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "updatedAt":
+			out.Values[i] = ec._Vehicle_updatedAt(ctx, field, obj)
+		case "deletedAt":
+			out.Values[i] = ec._Vehicle_deletedAt(ctx, field, obj)
 		case "make":
 			out.Values[i] = ec._Vehicle_make(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "model":
 			out.Values[i] = ec._Vehicle_model(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "year":
+			out.Values[i] = ec._Vehicle_year(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "user":
-			out.Values[i] = ec._Vehicle_user(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Vehicle_user(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "odometer":
 			out.Values[i] = ec._Vehicle_odometer(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -3841,6 +4810,15 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNDistanceUnit2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceUnit(ctx context.Context, v interface{}) (model.DistanceUnit, error) {
+	var res model.DistanceUnit
+	return res, res.UnmarshalGQL(v)
+}
+
+func (ec *executionContext) marshalNDistanceUnit2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceUnit(ctx context.Context, sel ast.SelectionSet, v model.DistanceUnit) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) marshalNDistanceValue2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceValue(ctx context.Context, sel ast.SelectionSet, v model.DistanceValue) graphql.Marshaler {
 	return ec._DistanceValue(ctx, sel, &v)
 }
@@ -3853,6 +4831,18 @@ func (ec *executionContext) marshalNDistanceValue2ᚖgithubᚗcomᚋmsawatzky75�
 		return graphql.Null
 	}
 	return ec._DistanceValue(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNDistanceValueInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceValueInput(ctx context.Context, v interface{}) (model.DistanceValueInput, error) {
+	return ec.unmarshalInputDistanceValueInput(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNDistanceValueInput2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceValueInput(ctx context.Context, v interface{}) (*model.DistanceValueInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalNDistanceValueInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceValueInput(ctx, v)
+	return &res, err
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
@@ -3893,6 +4883,38 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
+func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+	return graphql.UnmarshalTime(v)
+}
+
+func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
+	res := graphql.MarshalTime(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalNTime2timeᚐTime(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalNTime2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec.marshalNTime2timeᚐTime(ctx, sel, *v)
+}
+
 func (ec *executionContext) marshalNUser2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
@@ -3923,6 +4945,10 @@ func (ec *executionContext) marshalNVehicle2ᚖgithubᚗcomᚋmsawatzky75ᚋmain
 		return graphql.Null
 	}
 	return ec._Vehicle(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNVehicleInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐVehicleInput(ctx context.Context, v interface{}) (model.VehicleInput, error) {
+	return ec.unmarshalInputVehicleInput(ctx, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -4363,6 +5389,29 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return ec.marshalOString2string(ctx, sel, *v)
+}
+
+func (ec *executionContext) unmarshalOTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+	return graphql.UnmarshalTime(v)
+}
+
+func (ec *executionContext) marshalOTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
+	return graphql.MarshalTime(v)
+}
+
+func (ec *executionContext) unmarshalOTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOTime2timeᚐTime(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec.marshalOTime2timeᚐTime(ctx, sel, *v)
 }
 
 func (ec *executionContext) marshalOUserPreference2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐUserPreference(ctx context.Context, sel ast.SelectionSet, v model.UserPreference) graphql.Marshaler {

@@ -1,0 +1,33 @@
+scalar Time
+
+input UserInput {
+	email: String!
+}
+
+input VehicleInput {
+	make: String!
+	model: String!
+	year: Int!
+	odometer: DistanceValueInput!
+	userId: String!
+}
+
+input DistanceValueInput {
+	value: Int!
+	type: DistanceUnit!
+}
+
+type Query {
+	getUser(id: String): User!
+}
+
+type Mutation {
+	createUser(data: UserInput!): User!
+	createVehicle(data: VehicleInput!): Vehicle!
+}
+
+schema {
+	query: Query
+	mutation: Mutation
+}
+
