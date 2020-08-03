@@ -36,7 +36,10 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Mutation() MutationResolver
 	Query() QueryResolver
+	User() UserResolver
+	UserPreference() UserPreferenceResolver
 }
 
 type DirectiveRoot struct {
@@ -76,6 +79,10 @@ type ComplexityRoot struct {
 		Value func(childComplexity int) int
 	}
 
+	Mutation struct {
+		CreateUser func(childComplexity int, data model.UserInput) int
+	}
+
 	OilChangeLog struct {
 		Date    func(childComplexity int) int
 		ID      func(childComplexity int) int
@@ -84,7 +91,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetUser func(childComplexity int, email *string) int
+		GetUser func(childComplexity int, id *string) int
 	}
 
 	User struct {
@@ -111,8 +118,21 @@ type ComplexityRoot struct {
 	}
 }
 
+type MutationResolver interface {
+	CreateUser(ctx context.Context, data model.UserInput) (*model.User, error)
+}
 type QueryResolver interface {
-	GetUser(ctx context.Context, email *string) (*model.User, error)
+	GetUser(ctx context.Context, id *string) (*model.User, error)
+}
+type UserResolver interface {
+	ID(ctx context.Context, obj *model.User) (string, error)
+
+	Logs(ctx context.Context, obj *model.User, startDate int, endDate int) ([]model.Log, error)
+	Vehicles(ctx context.Context, obj *model.User) ([]*model.Vehicle, error)
+	Preference(ctx context.Context, obj *model.User) (*model.UserPreference, error)
+}
+type UserPreferenceResolver interface {
+	Vehicle(ctx context.Context, obj *model.UserPreference) (*model.Vehicle, error)
 }
 
 type executableSchema struct {
@@ -256,6 +276,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MoneyValue.Value(childComplexity), true
 
+	case "Mutation.createUser":
+		if e.complexity.Mutation.CreateUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createUser_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateUser(childComplexity, args["data"].(model.UserInput)), true
+
 	case "OilChangeLog.date":
 		if e.complexity.OilChangeLog.Date == nil {
 			break
@@ -294,7 +326,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetUser(childComplexity, args["email"].(*string)), true
+		return e.complexity.Query.GetUser(childComplexity, args["id"].(*string)), true
 
 	case "User.email":
 		if e.complexity.User.Email == nil {
@@ -423,6 +455,20 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 				Data: buf.Bytes(),
 			}
 		}
+	case ast.Mutation:
+		return func(ctx context.Context) *graphql.Response {
+			if !first {
+				return nil
+			}
+			first = false
+			data := ec._Mutation(ctx, rc.Operation.SelectionSet)
+			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
+		}
 
 	default:
 		return graphql.OneShot(graphql.ErrorResponse(ctx, "unsupported GraphQL operation"))
@@ -449,7 +495,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	&ast.Source{Name: "graph/schema.graphqls", Input: `enum DistanceUnit { Kilometre Mile }
+	&ast.Source{Name: "graph/models.graphqls", Input: `enum DistanceUnit { Kilometre Mile }
 type DistanceValue {
 	value: Int
 	type: DistanceUnit
@@ -521,13 +567,22 @@ type Vehicle {
 	user: User!
 	odometer: DistanceValue!
 }
+`, BuiltIn: false},
+	&ast.Source{Name: "graph/schema.graphqls", Input: `input UserInput {
+	email: String!
+}
 
 type Query {
-	getUser(email: String): User!
+	getUser(id: String): User!
+}
+
+type Mutation {
+	createUser(data: UserInput!): User!
 }
 
 schema {
 	query: Query
+	mutation: Mutation
 }
 
 `, BuiltIn: false},
@@ -537,6 +592,20 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.UserInput
+	if tmp, ok := rawArgs["data"]; ok {
+		arg0, err = ec.unmarshalNUserInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐUserInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["data"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -556,13 +625,13 @@ func (ec *executionContext) field_Query_getUser_args(ctx context.Context, rawArg
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *string
-	if tmp, ok := rawArgs["email"]; ok {
+	if tmp, ok := rawArgs["id"]; ok {
 		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["email"] = arg0
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -1206,6 +1275,47 @@ func (ec *executionContext) _MoneyValue_type(ctx context.Context, field graphql.
 	return ec.marshalOMoneyUnit2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐMoneyUnit(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createUser_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateUser(rctx, args["data"].(model.UserInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _OilChangeLog_id(ctx context.Context, field graphql.CollectedField, obj *model.OilChangeLog) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1366,7 +1476,7 @@ func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.Co
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetUser(rctx, args["email"].(*string))
+		return ec.resolvers.Query().GetUser(rctx, args["id"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1463,13 +1573,13 @@ func (ec *executionContext) _User_id(ctx context.Context, field graphql.Collecte
 		Object:   "User",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return ec.resolvers.User().ID(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1531,7 +1641,7 @@ func (ec *executionContext) _User_logs(ctx context.Context, field graphql.Collec
 		Object:   "User",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
@@ -1544,7 +1654,7 @@ func (ec *executionContext) _User_logs(ctx context.Context, field graphql.Collec
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Logs, nil
+		return ec.resolvers.User().Logs(rctx, obj, args["startDate"].(int), args["endDate"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1569,13 +1679,13 @@ func (ec *executionContext) _User_vehicles(ctx context.Context, field graphql.Co
 		Object:   "User",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Vehicles, nil
+		return ec.resolvers.User().Vehicles(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1600,13 +1710,13 @@ func (ec *executionContext) _User_preference(ctx context.Context, field graphql.
 		Object:   "User",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Preference, nil
+		return ec.resolvers.User().Preference(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1724,13 +1834,13 @@ func (ec *executionContext) _UserPreference_vehicle(ctx context.Context, field g
 		Object:   "UserPreference",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Vehicle, nil
+		return ec.resolvers.UserPreference().Vehicle(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2969,6 +3079,24 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputUserInput(ctx context.Context, obj interface{}) (model.UserInput, error) {
+	var it model.UserInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "email":
+			var err error
+			it.Email, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -3177,6 +3305,37 @@ func (ec *executionContext) _MoneyValue(ctx context.Context, sel ast.SelectionSe
 	return out
 }
 
+var mutationImplementors = []string{"Mutation"}
+
+func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mutationImplementors)
+
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Mutation",
+	})
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Mutation")
+		case "createUser":
+			out.Values[i] = ec._Mutation_createUser(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var oilChangeLogImplementors = []string{"OilChangeLog", "Log"}
 
 func (ec *executionContext) _OilChangeLog(ctx context.Context, sel ast.SelectionSet, obj *model.OilChangeLog) graphql.Marshaler {
@@ -3275,21 +3434,57 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("User")
 		case "id":
-			out.Values[i] = ec._User_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "email":
 			out.Values[i] = ec._User_email(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "logs":
-			out.Values[i] = ec._User_logs(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_logs(ctx, field, obj)
+				return res
+			})
 		case "vehicles":
-			out.Values[i] = ec._User_vehicles(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_vehicles(ctx, field, obj)
+				return res
+			})
 		case "preference":
-			out.Values[i] = ec._User_preference(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_preference(ctx, field, obj)
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3319,7 +3514,16 @@ func (ec *executionContext) _UserPreference(ctx context.Context, sel ast.Selecti
 		case "money":
 			out.Values[i] = ec._UserPreference_money(ctx, field, obj)
 		case "vehicle":
-			out.Values[i] = ec._UserPreference_vehicle(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._UserPreference_vehicle(ctx, field, obj)
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3701,6 +3905,10 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋmsawatzky75ᚋmainten
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNUserInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐUserInput(ctx context.Context, v interface{}) (model.UserInput, error) {
+	return ec.unmarshalInputUserInput(ctx, v)
 }
 
 func (ec *executionContext) marshalNVehicle2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐVehicle(ctx context.Context, sel ast.SelectionSet, v model.Vehicle) graphql.Marshaler {

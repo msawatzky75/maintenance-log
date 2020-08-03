@@ -5,27 +5,36 @@ package graph
 
 import (
 	"context"
+	"log"
+
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/msawatzky75/maintenence-log/server/graph/generated"
 	"github.com/msawatzky75/maintenence-log/server/graph/model"
 )
 
-func (r *queryResolver) GetUser(ctx context.Context, email *string) (*model.User, error) {
-	return &model.User{ID: "test", Email: *email}, nil
+func (r *mutationResolver) CreateUser(ctx context.Context, data model.UserInput) (*model.User, error) {
+	u := model.User{Email: data.Email}
+	r.DB.Create(&u)
+	return &u, nil
 }
+
+func (r *queryResolver) GetUser(ctx context.Context, id *string) (*model.User, error) {
+	uid, err := uuid.FromString(*id)
+	if err != nil {
+		panic("Unable to convert string to uuid")
+	}
+
+	log.Print(r.DB.Where("id = ?", uid).First(&model.User{}))
+
+	return &model.User{}, nil
+}
+
+// Mutation returns generated.MutationResolver implementation.
+func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
-type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-
-// func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
-
 type mutationResolver struct{ *Resolver }
+type queryResolver struct{ *Resolver }

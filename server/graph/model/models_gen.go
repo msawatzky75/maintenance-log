@@ -58,19 +58,8 @@ type OilChangeLog struct {
 
 func (OilChangeLog) IsLog() {}
 
-type User struct {
-	ID         string          `json:"id"`
-	Email      string          `json:"email"`
-	Logs       []Log           `json:"logs"`
-	Vehicles   []*Vehicle      `json:"vehicles"`
-	Preference *UserPreference `json:"preference"`
-}
-
-type UserPreference struct {
-	Distance *DistanceUnit `json:"distance"`
-	Fluid    *FluidUnit    `json:"fluid"`
-	Money    *MoneyUnit    `json:"money"`
-	Vehicle  *Vehicle      `json:"vehicle"`
+type UserInput struct {
+	Email string `json:"email"`
 }
 
 type Vehicle struct {
