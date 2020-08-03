@@ -9,9 +9,9 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/joho/godotenv"
-	"github.com/msawatzky75/maintenence-log/server/graph"
 	"github.com/msawatzky75/maintenence-log/server/graph/generated"
 	"github.com/msawatzky75/maintenence-log/server/graph/model"
+	graph "github.com/msawatzky75/maintenence-log/server/graph/resolvers"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -39,7 +39,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db.AutoMigrate(&model.User{})
+	db.AutoMigrate(
+		&model.User{},
+		&model.UserPreference{},
+		&model.Vehicle{},
+		&model.FuelLog{},
+		&model.MaintenanceLog{},
+		&model.OilChangeLog{})
 	defer db.Close()
 
 	port := os.Getenv("PORT")
