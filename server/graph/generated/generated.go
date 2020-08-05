@@ -70,6 +70,7 @@ type ComplexityRoot struct {
 		Grade      func(childComplexity int) int
 		ID         func(childComplexity int) int
 		Notes      func(childComplexity int) int
+		Odometer   func(childComplexity int) int
 		Trip       func(childComplexity int) int
 		UpdatedAt  func(childComplexity int) int
 		Vehicle    func(childComplexity int) int
@@ -81,6 +82,7 @@ type ComplexityRoot struct {
 		DeletedAt func(childComplexity int) int
 		ID        func(childComplexity int) int
 		Notes     func(childComplexity int) int
+		Odometer  func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
 		Vehicle   func(childComplexity int) int
 	}
@@ -91,8 +93,11 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateUser    func(childComplexity int, data model.UserInput) int
-		CreateVehicle func(childComplexity int, data model.VehicleInput) int
+		CreateFuelLog        func(childComplexity int, data model.FuelLogInput) int
+		CreateMaintenanceLog func(childComplexity int, data model.MaintenanceLogInput) int
+		CreateOilChangeLog   func(childComplexity int, data model.OilChangeLogInput) int
+		CreateUser           func(childComplexity int, data model.UserInput) int
+		CreateVehicle        func(childComplexity int, data model.VehicleInput) int
 	}
 
 	OilChangeLog struct {
@@ -101,6 +106,7 @@ type ComplexityRoot struct {
 		DeletedAt func(childComplexity int) int
 		ID        func(childComplexity int) int
 		Notes     func(childComplexity int) int
+		Odometer  func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
 		Vehicle   func(childComplexity int) int
 	}
@@ -153,6 +159,9 @@ type MaintenanceLogResolver interface {
 type MutationResolver interface {
 	CreateUser(ctx context.Context, data model.UserInput) (*model.User, error)
 	CreateVehicle(ctx context.Context, data model.VehicleInput) (*model.Vehicle, error)
+	CreateFuelLog(ctx context.Context, data model.FuelLogInput) (*model.FuelLog, error)
+	CreateMaintenanceLog(ctx context.Context, data model.MaintenanceLogInput) (*model.MaintenanceLog, error)
+	CreateOilChangeLog(ctx context.Context, data model.OilChangeLogInput) (*model.OilChangeLog, error)
 }
 type OilChangeLogResolver interface {
 	ID(ctx context.Context, obj *model.OilChangeLog) (string, error)
@@ -277,6 +286,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.FuelLog.Notes(childComplexity), true
 
+	case "FuelLog.odometer":
+		if e.complexity.FuelLog.Odometer == nil {
+			break
+		}
+
+		return e.complexity.FuelLog.Odometer(childComplexity), true
+
 	case "FuelLog.trip":
 		if e.complexity.FuelLog.Trip == nil {
 			break
@@ -333,6 +349,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MaintenanceLog.Notes(childComplexity), true
 
+	case "MaintenanceLog.odometer":
+		if e.complexity.MaintenanceLog.Odometer == nil {
+			break
+		}
+
+		return e.complexity.MaintenanceLog.Odometer(childComplexity), true
+
 	case "MaintenanceLog.updatedAt":
 		if e.complexity.MaintenanceLog.UpdatedAt == nil {
 			break
@@ -360,6 +383,42 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MoneyValue.Value(childComplexity), true
+
+	case "Mutation.createFuelLog":
+		if e.complexity.Mutation.CreateFuelLog == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createFuelLog_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateFuelLog(childComplexity, args["data"].(model.FuelLogInput)), true
+
+	case "Mutation.createMaintenanceLog":
+		if e.complexity.Mutation.CreateMaintenanceLog == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createMaintenanceLog_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateMaintenanceLog(childComplexity, args["data"].(model.MaintenanceLogInput)), true
+
+	case "Mutation.createOilChangeLog":
+		if e.complexity.Mutation.CreateOilChangeLog == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createOilChangeLog_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateOilChangeLog(childComplexity, args["data"].(model.OilChangeLogInput)), true
 
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
@@ -419,6 +478,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.OilChangeLog.Notes(childComplexity), true
+
+	case "OilChangeLog.odometer":
+		if e.complexity.OilChangeLog.Odometer == nil {
+			break
+		}
+
+		return e.complexity.OilChangeLog.Odometer(childComplexity), true
 
 	case "OilChangeLog.updatedAt":
 		if e.complexity.OilChangeLog.UpdatedAt == nil {
@@ -667,9 +733,9 @@ var sources = []*ast.Source{
 	createdAt: Time!
 	updatedAt: Time
 	deletedAt: Time
-
 	date: Time!
 	vehicle: Vehicle!
+	odometer: DistanceValue!
 	notes: String!
 }
 
@@ -678,9 +744,9 @@ type MaintenanceLog implements Log {
 	createdAt: Time!
 	updatedAt: Time
 	deletedAt: Time
-
 	date: Time!
 	vehicle: Vehicle!
+	odometer: DistanceValue!
 	notes: String!
 }
 
@@ -689,13 +755,14 @@ type FuelLog implements Log {
 	createdAt: Time!
 	updatedAt: Time
 	deletedAt: Time
-
 	date: Time!
 	vehicle: Vehicle!
+	odometer: DistanceValue!
 	notes: String!
+
 	trip: DistanceValue
 	grade: Int
-	fuelAmount: FluidValue
+	fuelAmount: FluidValue!
 	fuelPrice: MoneyValue
 }
 
@@ -704,9 +771,9 @@ type OilChangeLog implements Log {
 	createdAt: Time!
 	updatedAt: Time
 	deletedAt: Time
-
 	date: Time!
 	vehicle: Vehicle!
+	odometer: DistanceValue!
 	notes: String!
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/models.graphqls", Input: `enum DistanceUnit { Kilometre Mile }
@@ -746,6 +813,41 @@ input DistanceValueInput {
 	type: DistanceUnit!
 }
 
+input FluidValueInput {
+	value: Int!
+	type: FluidUnit!
+}
+
+input MoneyValueInput {
+	value: Int!
+	type: MoneyUnit!
+}
+
+
+input FuelLogInput {
+	date: Time!
+	vehicleId: String!
+	odometer: DistanceValueInput!
+	notes: String!
+
+	trip: DistanceValueInput!
+	grade: Int!
+	fuelAmount: FluidValueInput!
+	fuelPrice: MoneyValueInput!
+}
+input MaintenanceLogInput {
+	date: Time!
+	vehicleId: String!
+	odometer: DistanceValueInput!
+	notes: String!
+}
+input OilChangeLogInput {
+	date: Time!
+	vehicleId: String!
+	odometer: DistanceValueInput!
+	notes: String!
+}
+
 type Query {
 	getUser(id: String): User!
 }
@@ -753,6 +855,9 @@ type Query {
 type Mutation {
 	createUser(data: UserInput!): User!
 	createVehicle(data: VehicleInput!): Vehicle!
+	createFuelLog(data: FuelLogInput!): FuelLog!
+	createMaintenanceLog(data: MaintenanceLogInput!): MaintenanceLog!
+	createOilChangeLog(data: OilChangeLogInput!): OilChangeLog!
 }
 
 schema {
@@ -799,6 +904,48 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_createFuelLog_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.FuelLogInput
+	if tmp, ok := rawArgs["data"]; ok {
+		arg0, err = ec.unmarshalNFuelLogInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFuelLogInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["data"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createMaintenanceLog_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.MaintenanceLogInput
+	if tmp, ok := rawArgs["data"]; ok {
+		arg0, err = ec.unmarshalNMaintenanceLogInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐMaintenanceLogInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["data"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createOilChangeLog_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.OilChangeLogInput
+	if tmp, ok := rawArgs["data"]; ok {
+		arg0, err = ec.unmarshalNOilChangeLogInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐOilChangeLogInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["data"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -1236,6 +1383,40 @@ func (ec *executionContext) _FuelLog_vehicle(ctx context.Context, field graphql.
 	return ec.marshalNVehicle2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐVehicle(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _FuelLog_odometer(ctx context.Context, field graphql.CollectedField, obj *model.FuelLog) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "FuelLog",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Odometer, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.DistanceValue)
+	fc.Result = res
+	return ec.marshalNDistanceValue2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceValue(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _FuelLog_notes(ctx context.Context, field graphql.CollectedField, obj *model.FuelLog) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1356,11 +1537,14 @@ func (ec *executionContext) _FuelLog_fuelAmount(ctx context.Context, field graph
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*model.FluidValue)
 	fc.Result = res
-	return ec.marshalOFluidValue2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFluidValue(ctx, field.Selections, res)
+	return ec.marshalNFluidValue2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFluidValue(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _FuelLog_fuelPrice(ctx context.Context, field graphql.CollectedField, obj *model.FuelLog) (ret graphql.Marshaler) {
@@ -1592,6 +1776,40 @@ func (ec *executionContext) _MaintenanceLog_vehicle(ctx context.Context, field g
 	return ec.marshalNVehicle2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐVehicle(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _MaintenanceLog_odometer(ctx context.Context, field graphql.CollectedField, obj *model.MaintenanceLog) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "MaintenanceLog",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Odometer, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.DistanceValue)
+	fc.Result = res
+	return ec.marshalNDistanceValue2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceValue(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _MaintenanceLog_notes(ctx context.Context, field graphql.CollectedField, obj *model.MaintenanceLog) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1768,6 +1986,129 @@ func (ec *executionContext) _Mutation_createVehicle(ctx context.Context, field g
 	res := resTmp.(*model.Vehicle)
 	fc.Result = res
 	return ec.marshalNVehicle2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐVehicle(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createFuelLog(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createFuelLog_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateFuelLog(rctx, args["data"].(model.FuelLogInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.FuelLog)
+	fc.Result = res
+	return ec.marshalNFuelLog2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFuelLog(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createMaintenanceLog(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createMaintenanceLog_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateMaintenanceLog(rctx, args["data"].(model.MaintenanceLogInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.MaintenanceLog)
+	fc.Result = res
+	return ec.marshalNMaintenanceLog2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐMaintenanceLog(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createOilChangeLog(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createOilChangeLog_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateOilChangeLog(rctx, args["data"].(model.OilChangeLogInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.OilChangeLog)
+	fc.Result = res
+	return ec.marshalNOilChangeLog2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐOilChangeLog(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OilChangeLog_id(ctx context.Context, field graphql.CollectedField, obj *model.OilChangeLog) (ret graphql.Marshaler) {
@@ -1966,6 +2307,40 @@ func (ec *executionContext) _OilChangeLog_vehicle(ctx context.Context, field gra
 	res := resTmp.(*model.Vehicle)
 	fc.Result = res
 	return ec.marshalNVehicle2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐVehicle(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _OilChangeLog_odometer(ctx context.Context, field graphql.CollectedField, obj *model.OilChangeLog) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "OilChangeLog",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Odometer, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.DistanceValue)
+	fc.Result = res
+	return ec.marshalNDistanceValue2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceValue(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OilChangeLog_notes(ctx context.Context, field graphql.CollectedField, obj *model.OilChangeLog) (ret graphql.Marshaler) {
@@ -3879,6 +4254,186 @@ func (ec *executionContext) unmarshalInputDistanceValueInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputFluidValueInput(ctx context.Context, obj interface{}) (model.FluidValueInput, error) {
+	var it model.FluidValueInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "value":
+			var err error
+			it.Value, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "type":
+			var err error
+			it.Type, err = ec.unmarshalNFluidUnit2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFluidUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputFuelLogInput(ctx context.Context, obj interface{}) (model.FuelLogInput, error) {
+	var it model.FuelLogInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "date":
+			var err error
+			it.Date, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "vehicleId":
+			var err error
+			it.VehicleID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "odometer":
+			var err error
+			it.Odometer, err = ec.unmarshalNDistanceValueInput2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceValueInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "notes":
+			var err error
+			it.Notes, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "trip":
+			var err error
+			it.Trip, err = ec.unmarshalNDistanceValueInput2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceValueInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "grade":
+			var err error
+			it.Grade, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "fuelAmount":
+			var err error
+			it.FuelAmount, err = ec.unmarshalNFluidValueInput2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFluidValueInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "fuelPrice":
+			var err error
+			it.FuelPrice, err = ec.unmarshalNMoneyValueInput2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐMoneyValueInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputMaintenanceLogInput(ctx context.Context, obj interface{}) (model.MaintenanceLogInput, error) {
+	var it model.MaintenanceLogInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "date":
+			var err error
+			it.Date, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "vehicleId":
+			var err error
+			it.VehicleID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "odometer":
+			var err error
+			it.Odometer, err = ec.unmarshalNDistanceValueInput2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceValueInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "notes":
+			var err error
+			it.Notes, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputMoneyValueInput(ctx context.Context, obj interface{}) (model.MoneyValueInput, error) {
+	var it model.MoneyValueInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "value":
+			var err error
+			it.Value, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "type":
+			var err error
+			it.Type, err = ec.unmarshalNMoneyUnit2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐMoneyUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputOilChangeLogInput(ctx context.Context, obj interface{}) (model.OilChangeLogInput, error) {
+	var it model.OilChangeLogInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "date":
+			var err error
+			it.Date, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "vehicleId":
+			var err error
+			it.VehicleID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "odometer":
+			var err error
+			it.Odometer, err = ec.unmarshalNDistanceValueInput2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceValueInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "notes":
+			var err error
+			it.Notes, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUserInput(ctx context.Context, obj interface{}) (model.UserInput, error) {
 	var it model.UserInput
 	var asMap = obj.(map[string]interface{})
@@ -4082,6 +4637,11 @@ func (ec *executionContext) _FuelLog(ctx context.Context, sel ast.SelectionSet, 
 				}
 				return res
 			})
+		case "odometer":
+			out.Values[i] = ec._FuelLog_odometer(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "notes":
 			out.Values[i] = ec._FuelLog_notes(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -4093,6 +4653,9 @@ func (ec *executionContext) _FuelLog(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._FuelLog_grade(ctx, field, obj)
 		case "fuelAmount":
 			out.Values[i] = ec._FuelLog_fuelAmount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "fuelPrice":
 			out.Values[i] = ec._FuelLog_fuelPrice(ctx, field, obj)
 		default:
@@ -4159,6 +4722,11 @@ func (ec *executionContext) _MaintenanceLog(ctx context.Context, sel ast.Selecti
 				}
 				return res
 			})
+		case "odometer":
+			out.Values[i] = ec._MaintenanceLog_odometer(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "notes":
 			out.Values[i] = ec._MaintenanceLog_notes(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -4226,6 +4794,21 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createFuelLog":
+			out.Values[i] = ec._Mutation_createFuelLog(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createMaintenanceLog":
+			out.Values[i] = ec._Mutation_createMaintenanceLog(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createOilChangeLog":
+			out.Values[i] = ec._Mutation_createOilChangeLog(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4290,6 +4873,11 @@ func (ec *executionContext) _OilChangeLog(ctx context.Context, sel ast.Selection
 				}
 				return res
 			})
+		case "odometer":
+			out.Values[i] = ec._OilChangeLog_odometer(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "notes":
 			out.Values[i] = ec._OilChangeLog_notes(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -4845,6 +5433,59 @@ func (ec *executionContext) unmarshalNDistanceValueInput2ᚖgithubᚗcomᚋmsawa
 	return &res, err
 }
 
+func (ec *executionContext) unmarshalNFluidUnit2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFluidUnit(ctx context.Context, v interface{}) (model.FluidUnit, error) {
+	var res model.FluidUnit
+	return res, res.UnmarshalGQL(v)
+}
+
+func (ec *executionContext) marshalNFluidUnit2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFluidUnit(ctx context.Context, sel ast.SelectionSet, v model.FluidUnit) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) marshalNFluidValue2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFluidValue(ctx context.Context, sel ast.SelectionSet, v model.FluidValue) graphql.Marshaler {
+	return ec._FluidValue(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNFluidValue2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFluidValue(ctx context.Context, sel ast.SelectionSet, v *model.FluidValue) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._FluidValue(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNFluidValueInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFluidValueInput(ctx context.Context, v interface{}) (model.FluidValueInput, error) {
+	return ec.unmarshalInputFluidValueInput(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNFluidValueInput2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFluidValueInput(ctx context.Context, v interface{}) (*model.FluidValueInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalNFluidValueInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFluidValueInput(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalNFuelLog2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFuelLog(ctx context.Context, sel ast.SelectionSet, v model.FuelLog) graphql.Marshaler {
+	return ec._FuelLog(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNFuelLog2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFuelLog(ctx context.Context, sel ast.SelectionSet, v *model.FuelLog) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._FuelLog(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNFuelLogInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFuelLogInput(ctx context.Context, v interface{}) (model.FuelLogInput, error) {
+	return ec.unmarshalInputFuelLogInput(ctx, v)
+}
+
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	return graphql.UnmarshalInt(v)
 }
@@ -4867,6 +5508,63 @@ func (ec *executionContext) marshalNLog2githubᚗcomᚋmsawatzky75ᚋmaintenence
 		return graphql.Null
 	}
 	return ec._Log(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNMaintenanceLog2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐMaintenanceLog(ctx context.Context, sel ast.SelectionSet, v model.MaintenanceLog) graphql.Marshaler {
+	return ec._MaintenanceLog(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMaintenanceLog2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐMaintenanceLog(ctx context.Context, sel ast.SelectionSet, v *model.MaintenanceLog) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._MaintenanceLog(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNMaintenanceLogInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐMaintenanceLogInput(ctx context.Context, v interface{}) (model.MaintenanceLogInput, error) {
+	return ec.unmarshalInputMaintenanceLogInput(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNMoneyUnit2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐMoneyUnit(ctx context.Context, v interface{}) (model.MoneyUnit, error) {
+	var res model.MoneyUnit
+	return res, res.UnmarshalGQL(v)
+}
+
+func (ec *executionContext) marshalNMoneyUnit2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐMoneyUnit(ctx context.Context, sel ast.SelectionSet, v model.MoneyUnit) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNMoneyValueInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐMoneyValueInput(ctx context.Context, v interface{}) (model.MoneyValueInput, error) {
+	return ec.unmarshalInputMoneyValueInput(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNMoneyValueInput2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐMoneyValueInput(ctx context.Context, v interface{}) (*model.MoneyValueInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalNMoneyValueInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐMoneyValueInput(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalNOilChangeLog2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐOilChangeLog(ctx context.Context, sel ast.SelectionSet, v model.OilChangeLog) graphql.Marshaler {
+	return ec._OilChangeLog(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNOilChangeLog2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐOilChangeLog(ctx context.Context, sel ast.SelectionSet, v *model.OilChangeLog) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._OilChangeLog(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNOilChangeLogInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐOilChangeLogInput(ctx context.Context, v interface{}) (model.OilChangeLogInput, error) {
+	return ec.unmarshalInputOilChangeLogInput(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -5257,17 +5955,6 @@ func (ec *executionContext) marshalOFluidUnit2ᚖgithubᚗcomᚋmsawatzky75ᚋma
 		return graphql.Null
 	}
 	return v
-}
-
-func (ec *executionContext) marshalOFluidValue2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFluidValue(ctx context.Context, sel ast.SelectionSet, v model.FluidValue) graphql.Marshaler {
-	return ec._FluidValue(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOFluidValue2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFluidValue(ctx context.Context, sel ast.SelectionSet, v *model.FluidValue) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._FluidValue(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v interface{}) (int, error) {

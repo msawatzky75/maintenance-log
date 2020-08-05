@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 )
 
 type Log interface {
@@ -27,9 +28,44 @@ type FluidValue struct {
 	Type  *FluidUnit `json:"type"`
 }
 
+type FluidValueInput struct {
+	Value int       `json:"value"`
+	Type  FluidUnit `json:"type"`
+}
+
+type FuelLogInput struct {
+	Date       time.Time           `json:"date"`
+	VehicleID  string              `json:"vehicleId"`
+	Odometer   *DistanceValueInput `json:"odometer"`
+	Notes      string              `json:"notes"`
+	Trip       *DistanceValueInput `json:"trip"`
+	Grade      int                 `json:"grade"`
+	FuelAmount *FluidValueInput    `json:"fuelAmount"`
+	FuelPrice  *MoneyValueInput    `json:"fuelPrice"`
+}
+
+type MaintenanceLogInput struct {
+	Date      time.Time           `json:"date"`
+	VehicleID string              `json:"vehicleId"`
+	Odometer  *DistanceValueInput `json:"odometer"`
+	Notes     string              `json:"notes"`
+}
+
 type MoneyValue struct {
 	Value *int       `json:"value"`
 	Type  *MoneyUnit `json:"type"`
+}
+
+type MoneyValueInput struct {
+	Value int       `json:"value"`
+	Type  MoneyUnit `json:"type"`
+}
+
+type OilChangeLogInput struct {
+	Date      time.Time           `json:"date"`
+	VehicleID string              `json:"vehicleId"`
+	Odometer  *DistanceValueInput `json:"odometer"`
+	Notes     string              `json:"notes"`
 }
 
 type UserInput struct {

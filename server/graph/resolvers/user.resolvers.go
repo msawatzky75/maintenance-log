@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/msawatzky75/maintenence-log/server/graph/generated"
@@ -36,7 +35,6 @@ func (r *userResolver) Logs(ctx context.Context, obj *model.User, startDate time
 func (r *userResolver) Vehicles(ctx context.Context, obj *model.User) ([]*model.Vehicle, error) {
 	var vehicles []*model.Vehicle
 	r.DB.Where(&model.Vehicle{UserID: &obj.ID}).Find(&vehicles)
-	log.Println(vehicles[0].Odometer)
 	return vehicles, nil
 }
 

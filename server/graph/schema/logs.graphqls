@@ -3,9 +3,9 @@ interface Log {
 	createdAt: Time!
 	updatedAt: Time
 	deletedAt: Time
-
 	date: Time!
 	vehicle: Vehicle!
+	odometer: DistanceValue!
 	notes: String!
 }
 
@@ -14,9 +14,9 @@ type MaintenanceLog implements Log {
 	createdAt: Time!
 	updatedAt: Time
 	deletedAt: Time
-
 	date: Time!
 	vehicle: Vehicle!
+	odometer: DistanceValue!
 	notes: String!
 }
 
@@ -25,13 +25,14 @@ type FuelLog implements Log {
 	createdAt: Time!
 	updatedAt: Time
 	deletedAt: Time
-
 	date: Time!
 	vehicle: Vehicle!
+	odometer: DistanceValue!
 	notes: String!
+
 	trip: DistanceValue
 	grade: Int
-	fuelAmount: FluidValue
+	fuelAmount: FluidValue!
 	fuelPrice: MoneyValue
 }
 
@@ -40,8 +41,8 @@ type OilChangeLog implements Log {
 	createdAt: Time!
 	updatedAt: Time
 	deletedAt: Time
-
 	date: Time!
 	vehicle: Vehicle!
+	odometer: DistanceValue!
 	notes: String!
 }
