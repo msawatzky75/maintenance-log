@@ -8,6 +8,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// ValidateVehicle validates and returns a vehicle based on id
 func ValidateVehicle(id string, db *gorm.DB) (*model.Vehicle, error) {
 	var v model.Vehicle
 	var c int
@@ -26,6 +27,7 @@ func ValidateVehicle(id string, db *gorm.DB) (*model.Vehicle, error) {
 	return &v, nil
 }
 
+// ValidateUser validates and returns a user based on id
 func ValidateUser(id string, db *gorm.DB) (*model.User, error) {
 	var u model.User
 	var c int
@@ -44,6 +46,7 @@ func ValidateUser(id string, db *gorm.DB) (*model.User, error) {
 	return &u, nil
 }
 
+// GetVehicleIDs returns a list of ids from an array of vehicles
 func GetVehicleIDs(vs *[]*model.Vehicle) []*uuid.UUID {
 	vsm := make([]*uuid.UUID, len(*vs))
 	for i, v := range *vs {

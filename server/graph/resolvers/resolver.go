@@ -6,6 +6,7 @@ import "github.com/jinzhu/gorm"
 //
 // It serves as dependency injection for your app, add any dependencies you require here.
 
+// Resolver is the base of the graphql resolver methods.
 type Resolver struct {
 	DB *gorm.DB
 }

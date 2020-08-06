@@ -28,4 +28,6 @@ type Vehicle {
 	year: Int!
 	user: User!
 	odometer: DistanceValue!
+
+	logs(startDate: Time!, endDate: Time!): [Log!]
 }

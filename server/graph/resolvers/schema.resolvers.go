@@ -60,7 +60,6 @@ func (r *mutationResolver) CreateVehicle(ctx context.Context, data model.Vehicle
 }
 
 func (r *mutationResolver) CreateFuelLog(ctx context.Context, data model.FuelLogInput) (*model.FuelLog, error) {
-
 	tx := r.DB.Begin()
 	// Rollback the transaction if the routine panics
 	defer func() {

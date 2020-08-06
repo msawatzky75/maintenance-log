@@ -137,6 +137,7 @@ type ComplexityRoot struct {
 		CreatedAt func(childComplexity int) int
 		DeletedAt func(childComplexity int) int
 		ID        func(childComplexity int) int
+		Logs      func(childComplexity int, startDate time.Time, endDate time.Time) int
 		Make      func(childComplexity int) int
 		Model     func(childComplexity int) int
 		Odometer  func(childComplexity int) int
@@ -185,6 +186,8 @@ type VehicleResolver interface {
 	ID(ctx context.Context, obj *model.Vehicle) (string, error)
 
 	User(ctx context.Context, obj *model.Vehicle) (*model.User, error)
+
+	Logs(ctx context.Context, obj *model.Vehicle, startDate time.Time, endDate time.Time) ([]model.Log, error)
 }
 
 type executableSchema struct {
@@ -622,6 +625,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Vehicle.ID(childComplexity), true
 
+	case "Vehicle.logs":
+		if e.complexity.Vehicle.Logs == nil {
+			break
+		}
+
+		args, err := ec.field_Vehicle_logs_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Vehicle.Logs(childComplexity, args["startDate"].(time.Time), args["endDate"].(time.Time)), true
+
 	case "Vehicle.make":
 		if e.complexity.Vehicle.Make == nil {
 			break
@@ -778,19 +793,19 @@ type OilChangeLog implements Log {
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/models.graphqls", Input: `enum DistanceUnit { Kilometre Mile }
 type DistanceValue {
-	value: Int
+	value: Float
 	type: DistanceUnit
 }
 
 enum FluidUnit { Litre Gallon }
 type FluidValue {
-	value: Int
+	value: Float
 	type: FluidUnit
 }
 
 enum MoneyUnit { CAD USD }
 type MoneyValue {
-	value: Int
+	value: Float
 	type: MoneyUnit
 }
 `, BuiltIn: false},
@@ -809,17 +824,17 @@ input VehicleInput {
 }
 
 input DistanceValueInput {
-	value: Int!
+	value: Float!
 	type: DistanceUnit!
 }
 
 input FluidValueInput {
-	value: Int!
+	value: Float!
 	type: FluidUnit!
 }
 
 input MoneyValueInput {
-	value: Int!
+	value: Float!
 	type: MoneyUnit!
 }
 
@@ -896,6 +911,8 @@ type Vehicle {
 	year: Int!
 	user: User!
 	odometer: DistanceValue!
+
+	logs(startDate: Time!, endDate: Time!): [Log!]
 }
 `, BuiltIn: false},
 }
@@ -1025,6 +1042,28 @@ func (ec *executionContext) field_User_logs_args(ctx context.Context, rawArgs ma
 	return args, nil
 }
 
+func (ec *executionContext) field_Vehicle_logs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 time.Time
+	if tmp, ok := rawArgs["startDate"]; ok {
+		arg0, err = ec.unmarshalNTime2timeᚐTime(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["startDate"] = arg0
+	var arg1 time.Time
+	if tmp, ok := rawArgs["endDate"]; ok {
+		arg1, err = ec.unmarshalNTime2timeᚐTime(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["endDate"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1087,9 +1126,9 @@ func (ec *executionContext) _DistanceValue_value(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int)
+	res := resTmp.(*float64)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _DistanceValue_type(ctx context.Context, field graphql.CollectedField, obj *model.DistanceValue) (ret graphql.Marshaler) {
@@ -1149,9 +1188,9 @@ func (ec *executionContext) _FluidValue_value(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int)
+	res := resTmp.(*float64)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _FluidValue_type(ctx context.Context, field graphql.CollectedField, obj *model.FluidValue) (ret graphql.Marshaler) {
@@ -1870,9 +1909,9 @@ func (ec *executionContext) _MoneyValue_value(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int)
+	res := resTmp.(*float64)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _MoneyValue_type(ctx context.Context, field graphql.CollectedField, obj *model.MoneyValue) (ret graphql.Marshaler) {
@@ -3175,6 +3214,44 @@ func (ec *executionContext) _Vehicle_odometer(ctx context.Context, field graphql
 	return ec.marshalNDistanceValue2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceValue(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Vehicle_logs(ctx context.Context, field graphql.CollectedField, obj *model.Vehicle) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Vehicle",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Vehicle_logs_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Vehicle().Logs(rctx, obj, args["startDate"].(time.Time), args["endDate"].(time.Time))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]model.Log)
+	fc.Result = res
+	return ec.marshalOLog2ᚕgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐLogᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -4238,7 +4315,7 @@ func (ec *executionContext) unmarshalInputDistanceValueInput(ctx context.Context
 		switch k {
 		case "value":
 			var err error
-			it.Value, err = ec.unmarshalNInt2int(ctx, v)
+			it.Value, err = ec.unmarshalNFloat2float64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4262,7 +4339,7 @@ func (ec *executionContext) unmarshalInputFluidValueInput(ctx context.Context, o
 		switch k {
 		case "value":
 			var err error
-			it.Value, err = ec.unmarshalNInt2int(ctx, v)
+			it.Value, err = ec.unmarshalNFloat2float64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4382,7 +4459,7 @@ func (ec *executionContext) unmarshalInputMoneyValueInput(ctx context.Context, o
 		switch k {
 		case "value":
 			var err error
-			it.Value, err = ec.unmarshalNInt2int(ctx, v)
+			it.Value, err = ec.unmarshalNFloat2float64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5128,6 +5205,17 @@ func (ec *executionContext) _Vehicle(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "logs":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Vehicle_logs(ctx, field, obj)
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5431,6 +5519,20 @@ func (ec *executionContext) unmarshalNDistanceValueInput2ᚖgithubᚗcomᚋmsawa
 	}
 	res, err := ec.unmarshalNDistanceValueInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceValueInput(ctx, v)
 	return &res, err
+}
+
+func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
+	return graphql.UnmarshalFloat(v)
+}
+
+func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	res := graphql.MarshalFloat(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalNFluidUnit2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFluidUnit(ctx context.Context, v interface{}) (model.FluidUnit, error) {
@@ -5931,6 +6033,29 @@ func (ec *executionContext) marshalODistanceValue2ᚖgithubᚗcomᚋmsawatzky75�
 		return graphql.Null
 	}
 	return ec._DistanceValue(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOFloat2float64(ctx context.Context, v interface{}) (float64, error) {
+	return graphql.UnmarshalFloat(v)
+}
+
+func (ec *executionContext) marshalOFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	return graphql.MarshalFloat(v)
+}
+
+func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v interface{}) (*float64, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOFloat2float64(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel ast.SelectionSet, v *float64) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec.marshalOFloat2float64(ctx, sel, *v)
 }
 
 func (ec *executionContext) unmarshalOFluidUnit2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐFluidUnit(ctx context.Context, v interface{}) (model.FluidUnit, error) {

@@ -13,17 +13,17 @@ input VehicleInput {
 }
 
 input DistanceValueInput {
-	value: Int!
+	value: Float!
 	type: DistanceUnit!
 }
 
 input FluidValueInput {
-	value: Int!
+	value: Float!
 	type: FluidUnit!
 }
 
 input MoneyValueInput {
-	value: Int!
+	value: Float!
 	type: MoneyUnit!
 }
 
@@ -52,6 +52,10 @@ input OilChangeLogInput {
 	notes: String!
 }
 
+input UserPreferenceInput {
+
+}
+
 type Query {
 	getUser(id: String): User!
 }
@@ -59,9 +63,12 @@ type Query {
 type Mutation {
 	createUser(data: UserInput!): User!
 	createVehicle(data: VehicleInput!): Vehicle!
+
 	createFuelLog(data: FuelLogInput!): FuelLog!
 	createMaintenanceLog(data: MaintenanceLogInput!): MaintenanceLog!
 	createOilChangeLog(data: OilChangeLogInput!): OilChangeLog!
+
+	updatePreference(data: UserPreferenceInput!): UserPreference!
 }
 
 schema {

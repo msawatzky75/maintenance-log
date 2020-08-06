@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/msawatzky75/maintenence-log/server/graph/generated"
@@ -24,10 +25,14 @@ func (r *userResolver) Logs(ctx context.Context, obj *model.User, startDate time
 		logs []model.Log
 	)
 
+	if endDate.Before(startDate) {
+		return logs, fmt.Errorf("endDate cannot be before start date")
+	}
+
 	r.DB.Find(&v, &model.Vehicle{UserID: &obj.ID})
 
 	vIDs := GetVehicleIDs(&v)
-	r.DB.Where("vehicle_id in (?)", vIDs).Where("date > ?", startDate).Where("date < ?", endDate).Find(&fl).Find(&ml).Find(&ol)
+	r.DB.Where("vehicle_id in (?)", vIDs).Where("date >= ?", startDate).Where("date < ?", endDate).Find(&fl).Find(&ml).Find(&ol)
 
 	if len(ml) > 0 {
 		for _, v := range ml {
@@ -79,6 +84,41 @@ func (r *vehicleResolver) User(ctx context.Context, obj *model.Vehicle) (*model.
 	var u model.User
 	r.DB.First(&u, "id = ?", obj.UserID.String())
 	return &u, nil
+}
+
+func (r *vehicleResolver) Logs(ctx context.Context, obj *model.Vehicle, startDate time.Time, endDate time.Time) ([]model.Log, error) {
+	var (
+		ml   []model.MaintenanceLog
+		fl   []model.FuelLog
+		ol   []model.OilChangeLog
+		logs []model.Log
+	)
+
+	if endDate.Before(startDate) {
+		return logs, fmt.Errorf("endDate cannot be before start date")
+	}
+
+	r.DB.Where("vehicle_id = ?", obj.ID).Where("date >= ?", startDate).Where("date < ?", endDate).Find(&fl).Find(&ml).Find(&ol)
+
+	if len(ml) > 0 {
+		for _, v := range ml {
+			logs = append(logs, v)
+		}
+	}
+
+	if len(fl) > 0 {
+		for _, v := range fl {
+			logs = append(logs, v)
+		}
+	}
+
+	if len(ol) > 0 {
+		for _, v := range ol {
+			logs = append(logs, v)
+		}
+	}
+
+	return logs, nil
 }
 
 // User returns generated.UserResolver implementation.

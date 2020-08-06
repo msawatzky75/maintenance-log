@@ -14,22 +14,22 @@ type Log interface {
 }
 
 type DistanceValue struct {
-	Value *int          `json:"value"`
+	Value *float64      `json:"value"`
 	Type  *DistanceUnit `json:"type"`
 }
 
 type DistanceValueInput struct {
-	Value int          `json:"value"`
+	Value float64      `json:"value"`
 	Type  DistanceUnit `json:"type"`
 }
 
 type FluidValue struct {
-	Value *int       `json:"value"`
+	Value *float64   `json:"value"`
 	Type  *FluidUnit `json:"type"`
 }
 
 type FluidValueInput struct {
-	Value int       `json:"value"`
+	Value float64   `json:"value"`
 	Type  FluidUnit `json:"type"`
 }
 
@@ -52,12 +52,12 @@ type MaintenanceLogInput struct {
 }
 
 type MoneyValue struct {
-	Value *int       `json:"value"`
+	Value *float64   `json:"value"`
 	Type  *MoneyUnit `json:"type"`
 }
 
 type MoneyValueInput struct {
-	Value int       `json:"value"`
+	Value float64   `json:"value"`
 	Type  MoneyUnit `json:"type"`
 }
 
