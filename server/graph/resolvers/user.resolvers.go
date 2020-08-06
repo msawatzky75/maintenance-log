@@ -42,7 +42,7 @@ func (r *userResolver) Logs(ctx context.Context, obj *model.User, startDate time
 	}
 
 	if len(ol) > 0 {
-		for _, v := range ml {
+		for _, v := range ol {
 			logs = append(logs, v)
 		}
 	}
