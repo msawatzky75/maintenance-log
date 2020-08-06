@@ -43,3 +43,11 @@ func ValidateUser(id string, db *gorm.DB) (*model.User, error) {
 
 	return &u, nil
 }
+
+func GetVehicleIDs(vs *[]*model.Vehicle) []*uuid.UUID {
+	vsm := make([]*uuid.UUID, len(*vs))
+	for i, v := range *vs {
+		vsm[i] = &v.ID
+	}
+	return vsm
+}

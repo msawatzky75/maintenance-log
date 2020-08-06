@@ -17,19 +17,37 @@ func (r *userResolver) ID(ctx context.Context, obj *model.User) (string, error) 
 
 func (r *userResolver) Logs(ctx context.Context, obj *model.User, startDate time.Time, endDate time.Time) ([]model.Log, error) {
 	var (
-		ml *model.MaintenanceLog
-		fl *model.FuelLog
-		ol *model.OilChangeLog
+		ml   []model.MaintenanceLog
+		fl   []model.FuelLog
+		ol   []model.OilChangeLog
+		v    []*model.Vehicle
+		logs []model.Log
 	)
 
-	var v []*model.Vehicle
 	r.DB.Find(&v, &model.Vehicle{UserID: &obj.ID})
 
-	r.DB.Where("vehicle_id in (?)", &v).Find(&ml).Find(&fl).Find(&ol)
+	vIDs := GetVehicleIDs(&v)
+	r.DB.Where("vehicle_id in (?)", vIDs).Where("date > ?", startDate).Where("date < ?", endDate).Find(&fl).Find(&ml).Find(&ol)
 
-	logs := []model.Log{}
+	if len(ml) > 0 {
+		for _, v := range ml {
+			logs = append(logs, v)
+		}
+	}
 
-	return append(logs, ml, fl, ol), nil
+	if len(fl) > 0 {
+		for _, v := range fl {
+			logs = append(logs, v)
+		}
+	}
+
+	if len(ol) > 0 {
+		for _, v := range ml {
+			logs = append(logs, v)
+		}
+	}
+
+	return logs, nil
 }
 
 func (r *userResolver) Vehicles(ctx context.Context, obj *model.User) ([]*model.Vehicle, error) {

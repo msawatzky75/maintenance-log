@@ -16,7 +16,7 @@ func (r *fuelLogResolver) ID(ctx context.Context, obj *model.FuelLog) (string, e
 
 func (r *fuelLogResolver) Vehicle(ctx context.Context, obj *model.FuelLog) (*model.Vehicle, error) {
 	var v model.Vehicle
-	r.DB.First(&v, "id = ?", obj.VehicleID.String())
+	r.DB.First(&v, "id = ?", obj.VehicleID)
 	return &v, nil
 }
 
@@ -26,7 +26,7 @@ func (r *maintenanceLogResolver) ID(ctx context.Context, obj *model.MaintenanceL
 
 func (r *maintenanceLogResolver) Vehicle(ctx context.Context, obj *model.MaintenanceLog) (*model.Vehicle, error) {
 	var v model.Vehicle
-	r.DB.First(&v, "id = ?", obj.VehicleID.String())
+	r.DB.First(&v, "id = ?", obj.VehicleID)
 	return &v, nil
 }
 
@@ -36,7 +36,7 @@ func (r *oilChangeLogResolver) ID(ctx context.Context, obj *model.OilChangeLog) 
 
 func (r *oilChangeLogResolver) Vehicle(ctx context.Context, obj *model.OilChangeLog) (*model.Vehicle, error) {
 	var v model.Vehicle
-	r.DB.First(&v, "id = ?", obj.VehicleID.String())
+	r.DB.First(&v, "id = ?", obj.VehicleID)
 	return &v, nil
 }
 

@@ -60,10 +60,21 @@ func (r *mutationResolver) CreateVehicle(ctx context.Context, data model.Vehicle
 }
 
 func (r *mutationResolver) CreateFuelLog(ctx context.Context, data model.FuelLogInput) (*model.FuelLog, error) {
+
+	tx := r.DB.Begin()
+	// Rollback the transaction if the routine panics
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
 	v, err := ValidateVehicle(data.VehicleID, r.DB)
 	if err != nil {
+		tx.Rollback()
 		return &model.FuelLog{}, err
 	}
+
 	odometer := model.DistanceValue{Value: &data.Odometer.Value, Type: &data.Odometer.Type}
 	trip := model.DistanceValue{Value: &data.Trip.Value, Type: &data.Trip.Type}
 	fuelAmount := model.FluidValue{Value: &data.FuelAmount.Value, Type: &data.FuelAmount.Type}
@@ -78,27 +89,86 @@ func (r *mutationResolver) CreateFuelLog(ctx context.Context, data model.FuelLog
 		FuelAmount: &fuelAmount,
 		FuelPrice:  &fuelPrice,
 	}
-	return &l, nil
+
+	if err := tx.Create(&l).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	v.Odometer = l.Odometer
+
+	if err := tx.Save(&v).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	return &l, tx.Commit().Error
 }
 
 func (r *mutationResolver) CreateMaintenanceLog(ctx context.Context, data model.MaintenanceLogInput) (*model.MaintenanceLog, error) {
+	tx := r.DB.Begin()
+	// Rollback the transaction if the routine panics
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
 	v, err := ValidateVehicle(data.VehicleID, r.DB)
 	if err != nil {
+		tx.Rollback()
 		return &model.MaintenanceLog{}, err
 	}
+
 	o := model.DistanceValue{Value: &data.Odometer.Value, Type: &data.Odometer.Type}
 	l := model.MaintenanceLog{Date: &data.Date, VehicleID: &v.ID, Odometer: &o, Notes: data.Notes}
-	return &l, nil
+
+	if err := tx.Create(&l).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	v.Odometer = l.Odometer
+
+	if err := tx.Save(&v).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	return &l, tx.Commit().Error
 }
 
 func (r *mutationResolver) CreateOilChangeLog(ctx context.Context, data model.OilChangeLogInput) (*model.OilChangeLog, error) {
+	tx := r.DB.Begin()
+	// Rollback the transaction if the routine panics
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
 	v, err := ValidateVehicle(data.VehicleID, r.DB)
 	if err != nil {
+		tx.Rollback()
 		return &model.OilChangeLog{}, err
 	}
+
 	o := model.DistanceValue{Value: &data.Odometer.Value, Type: &data.Odometer.Type}
 	l := model.OilChangeLog{Date: &data.Date, VehicleID: &v.ID, Odometer: &o, Notes: data.Notes}
-	return &l, nil
+
+	if err := tx.Create(&l).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	v.Odometer = l.Odometer
+
+	if err := tx.Save(&v).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	return &l, tx.Commit().Error
 }
 
 func (r *queryResolver) GetUser(ctx context.Context, id *string) (*model.User, error) {
