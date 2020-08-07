@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/msawatzky75/maintenence-log/server/graph/generated"
-	"github.com/msawatzky75/maintenence-log/server/graph/model"
+	"github.com/msawatzky75/maintenence-log/graph/generated"
+	"github.com/msawatzky75/maintenence-log/graph/model"
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, data model.UserInput) (*model.User, error) {
@@ -168,6 +168,47 @@ func (r *mutationResolver) CreateOilChangeLog(ctx context.Context, data model.Oi
 	}
 
 	return &l, tx.Commit().Error
+}
+
+func (r *mutationResolver) UpdatePreference(ctx context.Context, data model.UserPreferenceInput) (*model.UserPreference, error) {
+	panic(fmt.Errorf("Not Implemented"))
+
+	var p model.UserPreference
+
+	u, err := ValidateUser("todo", r.DB)
+	if err != nil {
+		return &p, err
+	}
+
+	// Have the UserPreference embedded into the user?
+
+	if u.PreferenceID != nil {
+		r.DB.Where("id = ?", u.PreferenceID).Find(&p)
+	}
+
+	if data.VehicleID != nil {
+		v, err := ValidateVehicle(*data.VehicleID, r.DB)
+		if err != nil {
+			return &p, err
+		}
+		p.VehicleID = &v.ID
+	}
+
+	if data.Distance != nil {
+		p.Distance = data.Distance
+	}
+
+	if data.Fluid != nil {
+		p.Fluid = data.Fluid
+	}
+
+	if data.Money != nil {
+		p.Money = data.Money
+	}
+
+	r.DB.Save(&p)
+
+	return &p, nil
 }
 
 func (r *queryResolver) GetUser(ctx context.Context, id *string) (*model.User, error) {

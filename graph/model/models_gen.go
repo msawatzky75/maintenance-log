@@ -72,6 +72,13 @@ type UserInput struct {
 	Email string `json:"email"`
 }
 
+type UserPreferenceInput struct {
+	Distance  *DistanceUnit `json:"distance"`
+	Fluid     *FluidUnit    `json:"fluid"`
+	Money     *MoneyUnit    `json:"money"`
+	VehicleID *string       `json:"vehicleId"`
+}
+
 type VehicleInput struct {
 	Make     string              `json:"make"`
 	Model    string              `json:"model"`
