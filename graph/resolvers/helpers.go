@@ -30,16 +30,15 @@ func ValidateVehicle(id string, db *gorm.DB) (*model.Vehicle, error) {
 // ValidateUser validates and returns a user based on id
 func ValidateUser(id string, db *gorm.DB) (*model.User, error) {
 	var u model.User
-	var c int
 
 	i, e := uuid.FromString(id)
 	if e != nil {
 		return &u, fmt.Errorf("Invalid UserID")
 	}
 
-	db.Where("id = ?", i).First(&u).Count(&c)
+	err := db.Where("id = ?", i).First(&u).Error
 
-	if c == 0 {
+	if err != nil {
 		return &u, fmt.Errorf("Unable to find user")
 	}
 
