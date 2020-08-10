@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/msawatzky75/maintenence-log/graph/generated"
-	"github.com/msawatzky75/maintenence-log/graph/model"
+	"github.com/msawatzky75/maintenence-log/server/graph/generated"
+	"github.com/msawatzky75/maintenence-log/server/graph/model"
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, data model.UserInput) (*model.User, error) {

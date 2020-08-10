@@ -6,8 +6,8 @@ package graph
 import (
 	"context"
 
-	"github.com/msawatzky75/maintenence-log/graph/generated"
-	"github.com/msawatzky75/maintenence-log/graph/model"
+	"github.com/msawatzky75/maintenence-log/server/graph/generated"
+	"github.com/msawatzky75/maintenence-log/server/graph/model"
 )
 
 func (r *fuelLogResolver) ID(ctx context.Context, obj *model.FuelLog) (string, error) {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
-	"github.com/msawatzky75/maintenence-log/graph/model"
+	"github.com/msawatzky75/maintenence-log/server/graph/model"
 	uuid "github.com/satori/go.uuid"
 )
 

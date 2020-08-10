@@ -9,9 +9,9 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/joho/godotenv"
-	"github.com/msawatzky75/maintenence-log/graph/generated"
-	"github.com/msawatzky75/maintenence-log/graph/model"
-	graph "github.com/msawatzky75/maintenence-log/graph/resolvers"
+	"github.com/msawatzky75/maintenence-log/server/graph/generated"
+	"github.com/msawatzky75/maintenence-log/server/graph/model"
+	graph "github.com/msawatzky75/maintenence-log/server/graph/resolvers"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"

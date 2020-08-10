@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/msawatzky75/maintenence-log/graph/generated"
-	"github.com/msawatzky75/maintenence-log/graph/model"
+	"github.com/msawatzky75/maintenence-log/server/graph/generated"
+	"github.com/msawatzky75/maintenence-log/server/graph/model"
 )
 
 func (r *userResolver) ID(ctx context.Context, obj *model.User) (string, error) {
