@@ -2,7 +2,6 @@ package endpoints
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -41,7 +40,6 @@ func createTokens(userID string) (t string, rt string, err error) {
 	t, err = jwt.NewWithClaims(jwt.SigningMethodHS256, &authClaims{
 		userID,
 		jwt.StandardClaims{
-			Issuer:    os.Getenv("JWT_ISSUER"),
 			ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),
 		},
 	}).SignedString([]byte(os.Getenv("JWT_SECRET")))
@@ -49,8 +47,11 @@ func createTokens(userID string) (t string, rt string, err error) {
 		return
 	}
 
-	rt, err = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(time.Hour * 7).Unix(),
+	rt, err = jwt.NewWithClaims(jwt.SigningMethodHS256, &authClaims{
+		userID,
+		jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * 7).Unix(),
+		},
 	}).SignedString([]byte(os.Getenv("JWT_SECRET")))
 
 	return
@@ -63,9 +64,6 @@ func loginPOST(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-
-	log.Print(l)
-	log.Printf("Attempting login with %s, %s", l.Email, l.Password)
 
 	user, err := validateUser(db, l)
 	if err != nil {
@@ -84,15 +82,9 @@ func loginPOST(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 // Login enpoint handler
 func Login(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-
 		switch r.Method {
 		case "POST":
 			loginPOST(db, w, r)
-		case "OPTIONS":
-			w.Header().Set("Access-Control-Allow-Headers", "*")
-			w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-			w.WriteHeader(http.StatusNoContent)
 		}
 	}
 }

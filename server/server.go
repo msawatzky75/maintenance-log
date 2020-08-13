@@ -73,13 +73,35 @@ func main() {
 		// Important to avoid security issues described here: https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
 		SigningMethod: jwt.SigningMethodHS256,
 	})
+	corsMiddleware := cors(os.Getenv("CORS_ORIGIN"))
 
 	http.Handle("/graphiql", playground.Handler("GraphQL playground", "/graphql"))
-	http.Handle("/graphql", jwtMiddleware.Handler(srv))
-	http.Handle("/api/user", endpoints.User(db))
-	http.Handle("/api/auth/login", endpoints.Login(db))
-	http.Handle("/api/auth/refresh", endpoints.Refresh(db))
+	http.Handle("/graphql", corsMiddleware.Handler(jwtMiddleware.Handler(srv)))
+	http.Handle("/api/user", corsMiddleware.Handler(endpoints.User(db)))
+	http.Handle("/api/auth/login", corsMiddleware.Handler(endpoints.Login(db)))
+	http.Handle("/api/auth/refresh", corsMiddleware.Handler(endpoints.Refresh(db)))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
+}
+
+type CorsMiddleware struct{}
+
+func cors(cors string) CorsMiddleware {
+	return CorsMiddleware{}
+}
+
+func (*CorsMiddleware) Handler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", os.Getenv("CORS_ORIGIN"))
+
+		switch r.Method {
+		case "OPTIONS":
+			w.Header().Set("Access-Control-Allow-Headers", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+			w.WriteHeader(http.StatusNoContent)
+		}
+
+		h.ServeHTTP(w, r)
+	})
 }
