@@ -1,14 +1,19 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	jwtmiddleware "github.com/auth0/go-jwt-middleware"
+	"github.com/dgrijalva/jwt-go"
+
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/joho/godotenv"
+	"github.com/msawatzky75/maintenence-log/server/endpoints"
 	"github.com/msawatzky75/maintenence-log/server/graph/generated"
 	"github.com/msawatzky75/maintenence-log/server/graph/model"
 	graph "github.com/msawatzky75/maintenence-log/server/graph/resolvers"
@@ -54,9 +59,26 @@ func main() {
 	}
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{DB: db}}))
+	jwtMiddleware := jwtmiddleware.New(jwtmiddleware.Options{
+		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
+			return []byte(os.Getenv("JWT_SECRET")), nil
+		},
+		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err string) {
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": err,
+			})
+		},
+		// When set, the middleware verifies that tokens are signed with the specific signing algorithm
+		// If the signing method is not constant the ValidationKeyGetter callback can be used to implement additional checks
+		// Important to avoid security issues described here: https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
+		SigningMethod: jwt.SigningMethodHS256,
+	})
 
 	http.Handle("/graphiql", playground.Handler("GraphQL playground", "/graphql"))
-	http.Handle("/graphql", srv)
+	http.Handle("/graphql", jwtMiddleware.Handler(srv))
+	http.Handle("/api/user", endpoints.User(db))
+	http.Handle("/api/auth/login", endpoints.Login(db))
+	http.Handle("/api/auth/refresh", endpoints.Refresh(db))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
