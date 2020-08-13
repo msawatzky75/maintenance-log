@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -16,14 +17,18 @@ type authClaims struct {
 	UserID string `json:"userId"`
 	jwt.StandardClaims
 }
+type login struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
 
-func validateUser(db *gorm.DB, email string, password string) (u model.User, e error) {
-	e = db.Where("email = ?", email).First(&u).Error
+func validateUser(db *gorm.DB, l login) (u model.User, e error) {
+	e = db.Where("email = ?", l.Email).First(&u).Error
 	if e != nil {
 		return
 	}
 
-	e = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+	e = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(l.Password))
 	if e != nil {
 		return
 	}
@@ -51,23 +56,43 @@ func createTokens(userID string) (t string, rt string, err error) {
 	return
 }
 
+func loginPOST(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
+	var l login
+
+	err := json.NewDecoder(r.Body).Decode(&l)
+	if err != nil {
+		panic(err)
+	}
+
+	log.Print(l)
+	log.Printf("Attempting login with %s, %s", l.Email, l.Password)
+
+	user, err := validateUser(db, l)
+	if err != nil {
+		http.Error(w, "unauthorized", 401)
+		return
+	}
+
+	t, rt, err := createTokens(user.ID.String())
+
+	json.NewEncoder(w).Encode(map[string]string{
+		"access_token":  t,
+		"refresh_token": rt,
+	})
+}
+
 // Login enpoint handler
 func Login(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		email := r.FormValue("email")
-		password := r.FormValue("password")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 
-		user, err := validateUser(db, email, password)
-		if err != nil {
-			http.Error(w, "unauthorized", 401)
-			return
+		switch r.Method {
+		case "POST":
+			loginPOST(db, w, r)
+		case "OPTIONS":
+			w.Header().Set("Access-Control-Allow-Headers", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+			w.WriteHeader(http.StatusNoContent)
 		}
-
-		t, rt, err := createTokens(user.ID.String())
-
-		json.NewEncoder(w).Encode(map[string]string{
-			"access_token":  t,
-			"refresh_token": rt,
-		})
 	}
 }
