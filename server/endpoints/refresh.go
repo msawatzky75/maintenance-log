@@ -29,7 +29,7 @@ func Refresh(db *gorm.DB) http.HandlerFunc {
 			)
 			json.NewDecoder(r.Body).Decode(&params)
 
-			jwt.ParseWithClaims(params.RefreshToken, claims, func(token *jwt.Token) (interface{}, error) {
+			jwt.ParseWithClaims(params.RefreshToken, &claims, func(token *jwt.Token) (interface{}, error) {
 				return []byte(os.Getenv("JWT_SECRET")), nil
 			})
 			uid := claims["userId"].(string)
