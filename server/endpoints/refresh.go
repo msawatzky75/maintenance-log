@@ -2,8 +2,10 @@ package endpoints
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
+	"os"
+
+	"github.com/dgrijalva/jwt-go"
 
 	"github.com/jinzhu/gorm"
 )
@@ -21,15 +23,22 @@ func Refresh(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "POST":
-			var params refreshParams
+			var (
+				params refreshParams
+				claims jwt.MapClaims
+			)
 			json.NewDecoder(r.Body).Decode(&params)
-			log.Print(params)
 
-			err := validateRefreshToken("TODO")
+			jwt.ParseWithClaims(params.RefreshToken, claims, func(token *jwt.Token) (interface{}, error) {
+				return []byte(os.Getenv("JWT_SECRET")), nil
+			})
+			uid := claims["userId"].(string)
+
+			err := validateRefreshToken(params.RefreshToken)
 			if err != nil {
 				http.Error(w, "invalid refresh token", http.StatusBadRequest)
 			}
-			t, _, err := createTokens("TODO")
+			t, _, err := createTokens(uid)
 
 			json.NewEncoder(w).Encode(map[string]string{
 				"access_token":  t,

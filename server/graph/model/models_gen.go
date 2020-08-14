@@ -13,6 +13,11 @@ type Log interface {
 	IsLog()
 }
 
+type DateFilter struct {
+	StartDate time.Time `json:"startDate"`
+	EndDate   time.Time `json:"endDate"`
+}
+
 type DistanceValue struct {
 	Value *float64      `json:"value"`
 	Type  *DistanceUnit `json:"type"`
@@ -42,6 +47,11 @@ type FuelLogInput struct {
 	Grade      int                 `json:"grade"`
 	FuelAmount *FluidValueInput    `json:"fuelAmount"`
 	FuelPrice  *MoneyValueInput    `json:"fuelPrice"`
+}
+
+type LogsFilter struct {
+	Date   *DateFilter `json:"date"`
+	Recent *int        `json:"recent"`
 }
 
 type MaintenanceLogInput struct {

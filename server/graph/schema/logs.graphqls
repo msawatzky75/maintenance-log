@@ -1,48 +1,48 @@
 interface Log {
-	id: String!
-	createdAt: Time!
-	updatedAt: Time
-	deletedAt: Time
-	date: Time!
-	vehicle: Vehicle!
-	odometer: DistanceValue!
-	notes: String!
+  id: String!
+  createdAt: Time!
+  updatedAt: Time
+  deletedAt: Time
+  date: Time!
+  vehicle: Vehicle!
+  odometer: DistanceValue!
+  notes: String!
 }
 
 type MaintenanceLog implements Log {
-	id: String!
-	createdAt: Time!
-	updatedAt: Time
-	deletedAt: Time
-	date: Time!
-	vehicle: Vehicle!
-	odometer: DistanceValue!
-	notes: String!
+  id: String!
+  createdAt: Time!
+  updatedAt: Time
+  deletedAt: Time
+  date: Time!
+  vehicle: Vehicle!
+  odometer: DistanceValue!
+  notes: String!
 }
 
 type FuelLog implements Log {
-	id: String!
-	createdAt: Time!
-	updatedAt: Time
-	deletedAt: Time
-	date: Time!
-	vehicle: Vehicle!
-	odometer: DistanceValue!
-	notes: String!
+  id: String!
+  createdAt: Time!
+  updatedAt: Time
+  deletedAt: Time
+  date: Time!
+  vehicle: Vehicle!
+  odometer: DistanceValue!
+  notes: String!
 
-	trip: DistanceValue
-	grade: Int
-	fuelAmount: FluidValue!
-	fuelPrice: MoneyValue
+  trip: DistanceValue
+  grade: Int
+  fuelAmount: FluidValue!
+  fuelPrice: MoneyValue
 }
 
 type OilChangeLog implements Log {
-	id: String!
-	createdAt: Time!
-	updatedAt: Time
-	deletedAt: Time
-	date: Time!
-	vehicle: Vehicle!
-	odometer: DistanceValue!
-	notes: String!
+  id: String!
+  createdAt: Time!
+  updatedAt: Time
+  deletedAt: Time
+  date: Time!
+  vehicle: Vehicle!
+  odometer: DistanceValue!
+  notes: String!
 }

@@ -1,33 +1,42 @@
 type User {
-	id: String!
-	createdAt: Time!
-	updatedAt: Time
-	deletedAt: Time
+  id: String!
+  createdAt: Time!
+  updatedAt: Time
+  deletedAt: Time
 
-	email: String!
-	logs(startDate: Time!, endDate: Time!): [Log!]
-	vehicles: [Vehicle!]
-	preference: UserPreference
+  email: String!
+  logs(filter: LogsFilter!): [Log!]
+  vehicles: [Vehicle!]
+  preference: UserPreference
 }
 
 type UserPreference {
-	distance: DistanceUnit
-	fluid: FluidUnit
-	money: MoneyUnit
-	vehicle: Vehicle
+  distance: DistanceUnit
+  fluid: FluidUnit
+  money: MoneyUnit
+  vehicle: Vehicle
 }
 
 type Vehicle {
-	id: String!
-	createdAt: Time!
-	updatedAt: Time
-	deletedAt: Time
+  id: String!
+  createdAt: Time!
+  updatedAt: Time
+  deletedAt: Time
 
-	make: String!
-	model: String!
-	year: Int!
-	user: User!
-	odometer: DistanceValue!
+  make: String!
+  model: String!
+  year: Int!
+  user: User!
+  odometer: DistanceValue!
 
-	logs(startDate: Time!, endDate: Time!): [Log!]
+  logs(filter: LogsFilter!): [Log!]
+}
+
+input DateFilter {
+  startDate: Time!
+  endDate: Time!
+}
+input LogsFilter {
+  date: DateFilter
+  recent: Int
 }

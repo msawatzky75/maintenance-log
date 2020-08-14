@@ -46,10 +46,54 @@ func ValidateUser(id string, db *gorm.DB) (*model.User, error) {
 }
 
 // GetVehicleIDs returns a list of ids from an array of vehicles
-func GetVehicleIDs(vs *[]*model.Vehicle) []*uuid.UUID {
-	vsm := make([]*uuid.UUID, len(*vs))
-	for i, v := range *vs {
-		vsm[i] = &v.ID
+func GetVehicleIDs(vs []*model.Vehicle) []uuid.UUID {
+	vsm := make([]uuid.UUID, len(vs))
+	for i, v := range vs {
+		vsm[i] = v.ID
 	}
 	return vsm
+}
+
+func GetVehicleLogs(DB *gorm.DB, ids []uuid.UUID, filter model.LogsFilter) ([]model.Log, error) {
+	var (
+		ml   []model.MaintenanceLog
+		fl   []model.FuelLog
+		ol   []model.OilChangeLog
+		logs []model.Log
+	)
+
+	if filter.Date != nil {
+		if filter.Date.EndDate.Before(filter.Date.StartDate) {
+			return logs, fmt.Errorf("endDate cannot be before start date")
+		}
+	}
+
+	db := DB.Where("vehicle_id in (?)", ids)
+	if filter.Date != nil {
+		db = db.Where("date >= ?", filter.Date.StartDate).Where("date < ?", filter.Date.EndDate)
+	}
+	if filter.Recent != nil && *filter.Recent > 0 {
+		db = db.Order("date").Limit(*filter.Recent)
+	}
+	db.Find(&fl).Find(&ml).Find(&ol)
+
+	if len(ml) > 0 {
+		for _, v := range ml {
+			logs = append(logs, v)
+		}
+	}
+
+	if len(fl) > 0 {
+		for _, v := range fl {
+			logs = append(logs, v)
+		}
+	}
+
+	if len(ol) > 0 {
+		for _, v := range ol {
+			logs = append(logs, v)
+		}
+	}
+
+	return logs, nil
 }

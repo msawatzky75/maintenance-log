@@ -73,7 +73,7 @@ func main() {
 		// Important to avoid security issues described here: https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
 		SigningMethod: jwt.SigningMethodHS256,
 	})
-	corsMiddleware := cors(os.Getenv("CORS_ORIGIN"))
+	corsMiddleware := CorsMiddleware{Cors: os.Getenv("CORS_ORIGIN")}
 
 	http.Handle("/graphiql", playground.Handler("GraphQL playground", "/graphql"))
 	http.Handle("/graphql", corsMiddleware.Handler(jwtMiddleware.Handler(srv)))
@@ -85,18 +85,15 @@ func main() {
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
-type CorsMiddleware struct{}
-
-func cors(cors string) CorsMiddleware {
-	return CorsMiddleware{}
+type CorsMiddleware struct {
+	Cors string
 }
 
-func (*CorsMiddleware) Handler(h http.Handler) http.Handler {
+func (c *CorsMiddleware) Handler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", os.Getenv("CORS_ORIGIN"))
+		w.Header().Set("Access-Control-Allow-Origin", c.Cors)
 
-		switch r.Method {
-		case "OPTIONS":
+		if r.Method == "OPTIONS" {
 			w.Header().Set("Access-Control-Allow-Headers", "*")
 			w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 			w.WriteHeader(http.StatusNoContent)

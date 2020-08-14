@@ -121,7 +121,7 @@ type ComplexityRoot struct {
 		DeletedAt  func(childComplexity int) int
 		Email      func(childComplexity int) int
 		ID         func(childComplexity int) int
-		Logs       func(childComplexity int, startDate time.Time, endDate time.Time) int
+		Logs       func(childComplexity int, filter model.LogsFilter) int
 		Preference func(childComplexity int) int
 		UpdatedAt  func(childComplexity int) int
 		Vehicles   func(childComplexity int) int
@@ -138,7 +138,7 @@ type ComplexityRoot struct {
 		CreatedAt func(childComplexity int) int
 		DeletedAt func(childComplexity int) int
 		ID        func(childComplexity int) int
-		Logs      func(childComplexity int, startDate time.Time, endDate time.Time) int
+		Logs      func(childComplexity int, filter model.LogsFilter) int
 		Make      func(childComplexity int) int
 		Model     func(childComplexity int) int
 		Odometer  func(childComplexity int) int
@@ -177,7 +177,7 @@ type QueryResolver interface {
 type UserResolver interface {
 	ID(ctx context.Context, obj *model.User) (string, error)
 
-	Logs(ctx context.Context, obj *model.User, startDate time.Time, endDate time.Time) ([]model.Log, error)
+	Logs(ctx context.Context, obj *model.User, filter model.LogsFilter) ([]model.Log, error)
 	Vehicles(ctx context.Context, obj *model.User) ([]*model.Vehicle, error)
 	Preference(ctx context.Context, obj *model.User) (*model.UserPreference, error)
 }
@@ -189,7 +189,7 @@ type VehicleResolver interface {
 
 	User(ctx context.Context, obj *model.Vehicle) (*model.User, error)
 
-	Logs(ctx context.Context, obj *model.Vehicle, startDate time.Time, endDate time.Time) ([]model.Log, error)
+	Logs(ctx context.Context, obj *model.Vehicle, filter model.LogsFilter) ([]model.Log, error)
 }
 
 type executableSchema struct {
@@ -567,7 +567,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.User.Logs(childComplexity, args["startDate"].(time.Time), args["endDate"].(time.Time)), true
+		return e.complexity.User.Logs(childComplexity, args["filter"].(model.LogsFilter)), true
 
 	case "User.preference":
 		if e.complexity.User.Preference == nil {
@@ -649,7 +649,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Vehicle.Logs(childComplexity, args["startDate"].(time.Time), args["endDate"].(time.Time)), true
+		return e.complexity.Vehicle.Logs(childComplexity, args["filter"].(model.LogsFilter)), true
 
 	case "Vehicle.make":
 		if e.complexity.Vehicle.Make == nil {
@@ -758,185 +758,202 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 
 var sources = []*ast.Source{
 	&ast.Source{Name: "graph/schema/logs.graphqls", Input: `interface Log {
-	id: String!
-	createdAt: Time!
-	updatedAt: Time
-	deletedAt: Time
-	date: Time!
-	vehicle: Vehicle!
-	odometer: DistanceValue!
-	notes: String!
+  id: String!
+  createdAt: Time!
+  updatedAt: Time
+  deletedAt: Time
+  date: Time!
+  vehicle: Vehicle!
+  odometer: DistanceValue!
+  notes: String!
 }
 
 type MaintenanceLog implements Log {
-	id: String!
-	createdAt: Time!
-	updatedAt: Time
-	deletedAt: Time
-	date: Time!
-	vehicle: Vehicle!
-	odometer: DistanceValue!
-	notes: String!
+  id: String!
+  createdAt: Time!
+  updatedAt: Time
+  deletedAt: Time
+  date: Time!
+  vehicle: Vehicle!
+  odometer: DistanceValue!
+  notes: String!
 }
 
 type FuelLog implements Log {
-	id: String!
-	createdAt: Time!
-	updatedAt: Time
-	deletedAt: Time
-	date: Time!
-	vehicle: Vehicle!
-	odometer: DistanceValue!
-	notes: String!
+  id: String!
+  createdAt: Time!
+  updatedAt: Time
+  deletedAt: Time
+  date: Time!
+  vehicle: Vehicle!
+  odometer: DistanceValue!
+  notes: String!
 
-	trip: DistanceValue
-	grade: Int
-	fuelAmount: FluidValue!
-	fuelPrice: MoneyValue
+  trip: DistanceValue
+  grade: Int
+  fuelAmount: FluidValue!
+  fuelPrice: MoneyValue
 }
 
 type OilChangeLog implements Log {
-	id: String!
-	createdAt: Time!
-	updatedAt: Time
-	deletedAt: Time
-	date: Time!
-	vehicle: Vehicle!
-	odometer: DistanceValue!
-	notes: String!
-}`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/models.graphqls", Input: `enum DistanceUnit { Kilometre Mile }
+  id: String!
+  createdAt: Time!
+  updatedAt: Time
+  deletedAt: Time
+  date: Time!
+  vehicle: Vehicle!
+  odometer: DistanceValue!
+  notes: String!
+}
+`, BuiltIn: false},
+	&ast.Source{Name: "graph/schema/models.graphqls", Input: `enum DistanceUnit {
+  Kilometre
+  Mile
+}
 type DistanceValue {
-	value: Float
-	type: DistanceUnit
+  value: Float
+  type: DistanceUnit
 }
 
-enum FluidUnit { Litre Gallon }
+enum FluidUnit {
+  Litre
+  Gallon
+}
 type FluidValue {
-	value: Float
-	type: FluidUnit
+  value: Float
+  type: FluidUnit
 }
 
-enum MoneyUnit { CAD USD }
+enum MoneyUnit {
+  CAD
+  USD
+}
 type MoneyValue {
-	value: Float
-	type: MoneyUnit
+  value: Float
+  type: MoneyUnit
 }
 `, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/schema.graphqls", Input: `scalar Time
 
 input UserInput {
-	email: String!
+  email: String!
 }
 
 input VehicleInput {
-	make: String!
-	model: String!
-	year: Int!
-	odometer: DistanceValueInput!
-	userId: String!
+  make: String!
+  model: String!
+  year: Int!
+  odometer: DistanceValueInput!
+  userId: String!
 }
 
 input DistanceValueInput {
-	value: Float!
-	type: DistanceUnit!
+  value: Float!
+  type: DistanceUnit!
 }
 
 input FluidValueInput {
-	value: Float!
-	type: FluidUnit!
+  value: Float!
+  type: FluidUnit!
 }
 
 input MoneyValueInput {
-	value: Float!
-	type: MoneyUnit!
+  value: Float!
+  type: MoneyUnit!
 }
-
 
 input FuelLogInput {
-	date: Time!
-	vehicleId: String!
-	odometer: DistanceValueInput!
-	notes: String!
+  date: Time!
+  vehicleId: String!
+  odometer: DistanceValueInput!
+  notes: String!
 
-	trip: DistanceValueInput!
-	grade: Int!
-	fuelAmount: FluidValueInput!
-	fuelPrice: MoneyValueInput!
+  trip: DistanceValueInput!
+  grade: Int!
+  fuelAmount: FluidValueInput!
+  fuelPrice: MoneyValueInput!
 }
 input MaintenanceLogInput {
-	date: Time!
-	vehicleId: String!
-	odometer: DistanceValueInput!
-	notes: String!
+  date: Time!
+  vehicleId: String!
+  odometer: DistanceValueInput!
+  notes: String!
 }
 input OilChangeLogInput {
-	date: Time!
-	vehicleId: String!
-	odometer: DistanceValueInput!
-	notes: String!
+  date: Time!
+  vehicleId: String!
+  odometer: DistanceValueInput!
+  notes: String!
 }
 
 input UserPreferenceInput {
-	distance: DistanceUnit
-	fluid: FluidUnit
-	money: MoneyUnit
-	vehicleId: String
+  distance: DistanceUnit
+  fluid: FluidUnit
+  money: MoneyUnit
+  vehicleId: String
 }
 
 type Query {
-	getUser(id: String): User!
+  getUser(id: String): User!
 }
 
 type Mutation {
-	createUser(data: UserInput!): User!
-	createVehicle(data: VehicleInput!): Vehicle!
+  createUser(data: UserInput!): User!
+  createVehicle(data: VehicleInput!): Vehicle!
 
-	createFuelLog(data: FuelLogInput!): FuelLog!
-	createMaintenanceLog(data: MaintenanceLogInput!): MaintenanceLog!
-	createOilChangeLog(data: OilChangeLogInput!): OilChangeLog!
+  createFuelLog(data: FuelLogInput!): FuelLog!
+  createMaintenanceLog(data: MaintenanceLogInput!): MaintenanceLog!
+  createOilChangeLog(data: OilChangeLogInput!): OilChangeLog!
 
-	updatePreference(data: UserPreferenceInput!): UserPreference!
+  updatePreference(data: UserPreferenceInput!): UserPreference!
 }
 
 schema {
-	query: Query
-	mutation: Mutation
+  query: Query
+  mutation: Mutation
 }
-
 `, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/user.graphqls", Input: `type User {
-	id: String!
-	createdAt: Time!
-	updatedAt: Time
-	deletedAt: Time
+  id: String!
+  createdAt: Time!
+  updatedAt: Time
+  deletedAt: Time
 
-	email: String!
-	logs(startDate: Time!, endDate: Time!): [Log!]
-	vehicles: [Vehicle!]
-	preference: UserPreference
+  email: String!
+  logs(filter: LogsFilter!): [Log!]
+  vehicles: [Vehicle!]
+  preference: UserPreference
 }
 
 type UserPreference {
-	distance: DistanceUnit
-	fluid: FluidUnit
-	money: MoneyUnit
-	vehicle: Vehicle
+  distance: DistanceUnit
+  fluid: FluidUnit
+  money: MoneyUnit
+  vehicle: Vehicle
 }
 
 type Vehicle {
-	id: String!
-	createdAt: Time!
-	updatedAt: Time
-	deletedAt: Time
+  id: String!
+  createdAt: Time!
+  updatedAt: Time
+  deletedAt: Time
 
-	make: String!
-	model: String!
-	year: Int!
-	user: User!
-	odometer: DistanceValue!
+  make: String!
+  model: String!
+  year: Int!
+  user: User!
+  odometer: DistanceValue!
 
-	logs(startDate: Time!, endDate: Time!): [Log!]
+  logs(filter: LogsFilter!): [Log!]
+}
+
+input DateFilter {
+  startDate: Time!
+  endDate: Time!
+}
+input LogsFilter {
+  date: DateFilter
+  recent: Int
 }
 `, BuiltIn: false},
 }
@@ -1061,44 +1078,28 @@ func (ec *executionContext) field_Query_getUser_args(ctx context.Context, rawArg
 func (ec *executionContext) field_User_logs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 time.Time
-	if tmp, ok := rawArgs["startDate"]; ok {
-		arg0, err = ec.unmarshalNTime2timeᚐTime(ctx, tmp)
+	var arg0 model.LogsFilter
+	if tmp, ok := rawArgs["filter"]; ok {
+		arg0, err = ec.unmarshalNLogsFilter2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐLogsFilter(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["startDate"] = arg0
-	var arg1 time.Time
-	if tmp, ok := rawArgs["endDate"]; ok {
-		arg1, err = ec.unmarshalNTime2timeᚐTime(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["endDate"] = arg1
+	args["filter"] = arg0
 	return args, nil
 }
 
 func (ec *executionContext) field_Vehicle_logs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 time.Time
-	if tmp, ok := rawArgs["startDate"]; ok {
-		arg0, err = ec.unmarshalNTime2timeᚐTime(ctx, tmp)
+	var arg0 model.LogsFilter
+	if tmp, ok := rawArgs["filter"]; ok {
+		arg0, err = ec.unmarshalNLogsFilter2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐLogsFilter(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["startDate"] = arg0
-	var arg1 time.Time
-	if tmp, ok := rawArgs["endDate"]; ok {
-		arg1, err = ec.unmarshalNTime2timeᚐTime(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["endDate"] = arg1
+	args["filter"] = arg0
 	return args, nil
 }
 
@@ -2793,7 +2794,7 @@ func (ec *executionContext) _User_logs(ctx context.Context, field graphql.Collec
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.User().Logs(rctx, obj, args["startDate"].(time.Time), args["endDate"].(time.Time))
+		return ec.resolvers.User().Logs(rctx, obj, args["filter"].(model.LogsFilter))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3317,7 +3318,7 @@ func (ec *executionContext) _Vehicle_logs(ctx context.Context, field graphql.Col
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Vehicle().Logs(rctx, obj, args["startDate"].(time.Time), args["endDate"].(time.Time))
+		return ec.resolvers.Vehicle().Logs(rctx, obj, args["filter"].(model.LogsFilter))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4386,6 +4387,30 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputDateFilter(ctx context.Context, obj interface{}) (model.DateFilter, error) {
+	var it model.DateFilter
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "startDate":
+			var err error
+			it.StartDate, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "endDate":
+			var err error
+			it.EndDate, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputDistanceValueInput(ctx context.Context, obj interface{}) (model.DistanceValueInput, error) {
 	var it model.DistanceValueInput
 	var asMap = obj.(map[string]interface{})
@@ -4485,6 +4510,30 @@ func (ec *executionContext) unmarshalInputFuelLogInput(ctx context.Context, obj 
 		case "fuelPrice":
 			var err error
 			it.FuelPrice, err = ec.unmarshalNMoneyValueInput2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐMoneyValueInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputLogsFilter(ctx context.Context, obj interface{}) (model.LogsFilter, error) {
+	var it model.LogsFilter
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "date":
+			var err error
+			it.Date, err = ec.unmarshalODateFilter2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDateFilter(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "recent":
+			var err error
+			it.Recent, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5732,6 +5781,10 @@ func (ec *executionContext) marshalNLog2githubᚗcomᚋmsawatzky75ᚋmaintenence
 	return ec._Log(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNLogsFilter2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐLogsFilter(ctx context.Context, v interface{}) (model.LogsFilter, error) {
+	return ec.unmarshalInputLogsFilter(ctx, v)
+}
+
 func (ec *executionContext) marshalNMaintenanceLog2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐMaintenanceLog(ctx context.Context, sel ast.SelectionSet, v model.MaintenanceLog) graphql.Marshaler {
 	return ec._MaintenanceLog(ctx, sel, &v)
 }
@@ -6136,6 +6189,18 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	return ec.marshalOBoolean2bool(ctx, sel, *v)
+}
+
+func (ec *executionContext) unmarshalODateFilter2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDateFilter(ctx context.Context, v interface{}) (model.DateFilter, error) {
+	return ec.unmarshalInputDateFilter(ctx, v)
+}
+
+func (ec *executionContext) unmarshalODateFilter2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDateFilter(ctx context.Context, v interface{}) (*model.DateFilter, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalODateFilter2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDateFilter(ctx, v)
+	return &res, err
 }
 
 func (ec *executionContext) unmarshalODistanceUnit2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceUnit(ctx context.Context, v interface{}) (model.DistanceUnit, error) {

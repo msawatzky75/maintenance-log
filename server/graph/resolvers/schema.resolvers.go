@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/msawatzky75/maintenence-log/server/graph/generated"
 	"github.com/msawatzky75/maintenence-log/server/graph/model"
 )
@@ -212,9 +213,22 @@ func (r *mutationResolver) UpdatePreference(ctx context.Context, data model.User
 }
 
 func (r *queryResolver) GetUser(ctx context.Context, id *string) (*model.User, error) {
-	u, err := ValidateUser(*id, r.DB)
-	if err != nil {
-		return &model.User{}, err
+	var (
+		u   *model.User
+		err error
+	)
+	uid := ctx.Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["userId"].(string)
+
+	if id != nil {
+		u, err = ValidateUser(*id, r.DB)
+		if err != nil {
+			return &model.User{}, err
+		}
+	} else {
+		u, err = ValidateUser(uid, r.DB)
+		if err != nil {
+			return &model.User{}, err
+		}
 	}
 
 	return u, nil

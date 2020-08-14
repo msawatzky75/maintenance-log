@@ -1,17 +1,26 @@
-enum DistanceUnit { Kilometre Mile }
+enum DistanceUnit {
+  Kilometre
+  Mile
+}
 type DistanceValue {
-	value: Float
-	type: DistanceUnit
+  value: Float
+  type: DistanceUnit
 }
 
-enum FluidUnit { Litre Gallon }
+enum FluidUnit {
+  Litre
+  Gallon
+}
 type FluidValue {
-	value: Float
-	type: FluidUnit
+  value: Float
+  type: FluidUnit
 }
 
-enum MoneyUnit { CAD USD }
+enum MoneyUnit {
+  CAD
+  USD
+}
 type MoneyValue {
-	value: Float
-	type: MoneyUnit
+  value: Float
+  type: MoneyUnit
 }
