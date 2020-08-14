@@ -1,0 +1,40 @@
+query {
+	getUser {
+		id
+		email
+		vehicles {
+			id
+			make
+			model
+			year
+			make
+			model
+			odometer {
+				value
+				type
+			}
+		}
+
+		logs(filter: { recent: 5 }) {
+			id
+			date
+			vehicle {
+				id
+				make
+				model
+				year
+			}
+			notes
+		}
+		preference {
+			distance
+			fluid
+			money
+			vehicle {
+				id
+				make
+				model
+			}
+		}
+	}
+}

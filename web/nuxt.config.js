@@ -14,7 +14,7 @@ export default {
 	 ** See https://nuxtjs.org/api/configuration-head
 	 */
 	head: {
-		title: process.env.npm_package_name || '',
+		title: 'Maintence Log Tracker',
 		meta: [
 			{ charset: 'utf-8' },
 			{ name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -29,7 +29,7 @@ export default {
 	/*
 	 ** Global CSS
 	 */
-	css: [],
+	css: ['@/assets/scss/main.scss'],
 	/*
 	 ** Plugins to load before mounting the App
 	 ** https://nuxtjs.org/guide/plugins
@@ -53,18 +53,41 @@ export default {
 		'@nuxtjs/pwa',
 
 		'@nuxtjs/axios',
-		'@nuxtjs/auth',
+		'@nuxtjs/auth-next',
+		'@nuxtjs/apollo',
 	],
 
+	axios: {
+		baseURL: 'http://localhost:4000',
+	},
 	auth: {
+		cookie: false,
 		strategies: {
 			local: {
-				endpoints: {
-					login: { url: '/api/login', method: 'post' },
+				scheme: 'refresh',
+				token: {
+					property: 'access_token',
+					maxAge: 60 * 15, // 15 minutes
+					type: 'Bearer',
 				},
-				tokenRequired: false,
-				tokenType: false,
+				refreshToken: {
+					property: 'refresh_token',
+					data: 'refresh_token',
+					maxAge: 60 * 60 * 24 * 7, // 7 days
+				},
+				endpoints: {
+					login: { url: '/api/auth/login', method: 'post' },
+					refresh: { url: '/api/auth/refresh', method: 'post' },
+					user: false,
+				},
 			},
+		},
+	},
+	apollo: {
+		authenticationType: 'Bearer',
+		tokenName: 'auth._token.local',
+		clientConfigs: {
+			default: '@/apollo/client-configs/default.ts',
 		},
 	},
 	/*

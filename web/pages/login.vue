@@ -1,19 +1,34 @@
 <template>
-	<div>
-		<b-form @submit="userLogin">
-			<div>
-				<label>Username</label>
-				<input v-model="login.username" type="text" />
-			</div>
-			<div>
-				<label>Password</label>
-				<input v-model="login.password" type="text" />
-			</div>
-			<div>
-				<b-button type="submit">Submit</b-button>
-			</div>
-		</b-form>
-	</div>
+	<section class="section">
+		<div class="container">
+			<h1 class="is-size-1 has-text-centered">Login</h1>
+			<form @submit.prevent="userLogin">
+				<b-field label="Email">
+					<b-input v-model="login.email" type="text" placeholder="Email" />
+				</b-field>
+				<b-field label="Password">
+					<b-input
+						v-model="login.password"
+						type="password"
+						placeholder="Password"
+						password-reveal
+					/>
+				</b-field>
+				<div>
+					<b-button
+						type="is-primary"
+						native-type="submit"
+						:disabled="loginable"
+					>
+						Login
+					</b-button>
+					<b-button type="is-secondary" @click.prevent="$auth.refreshTokens">
+						refresh
+					</b-button>
+				</div>
+			</form>
+		</div>
+	</section>
 </template>
 
 <script>
@@ -21,18 +36,22 @@ export default {
 	data() {
 		return {
 			login: {
-				username: '',
+				email: '',
 				password: '',
 			},
 		}
 	},
+	computed: {
+		loginable() {
+			return this.email && this.password.length > 12
+		},
+	},
 	methods: {
 		async userLogin() {
 			try {
-				const response = await this.$auth.loginWith('local', {
+				await this.$auth.loginWith('local', {
 					data: this.login,
 				})
-				console.log(response)
 			} catch (err) {
 				console.log(err)
 			}
