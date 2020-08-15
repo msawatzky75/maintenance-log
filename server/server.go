@@ -1,14 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-
-	jwtmiddleware "github.com/auth0/go-jwt-middleware"
-	"github.com/dgrijalva/jwt-go"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -17,6 +13,7 @@ import (
 	"github.com/msawatzky75/maintenence-log/server/graph/generated"
 	"github.com/msawatzky75/maintenence-log/server/graph/model"
 	graph "github.com/msawatzky75/maintenence-log/server/graph/resolvers"
+	"github.com/msawatzky75/maintenence-log/server/middleware"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -59,46 +56,27 @@ func main() {
 	}
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{DB: db}}))
-	jwtMiddleware := jwtmiddleware.New(jwtmiddleware.Options{
-		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-			return []byte(os.Getenv("JWT_SECRET")), nil
-		},
-		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err string) {
-			json.NewEncoder(w).Encode(map[string]string{
-				"error": err,
-			})
-		},
-		// When set, the middleware verifies that tokens are signed with the specific signing algorithm
-		// If the signing method is not constant the ValidationKeyGetter callback can be used to implement additional checks
-		// Important to avoid security issues described here: https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
-		SigningMethod: jwt.SigningMethodHS256,
-	})
-	corsMiddleware := CorsMiddleware{Cors: os.Getenv("CORS_ORIGIN")}
+	jwtMiddleware := middleware.Jwt{
+		AccessTokenCookie: "access_token",
+		RefreshTokenCookie: "refresh_token",
+		Secret: os.Getenv("JWT_SECRET")
+	}
+	corsMiddleware := middleware.Cors{Cors: os.Getenv("CORS_ORIGIN")}
+	loginEndpoint := endpoints.Login{
+		DB: db,
+		JWTSecret: os.Getenv("JWT_SECRET"),
+		AccessTokenCookie: "access_token",
+		AccessTokenLife: time.Minute * 5,
+		RefreshTokenCookie:: "refresh_token",
+		RefreshTokenLife: time.Day * 7
+	}
 
 	http.Handle("/graphiql", playground.Handler("GraphQL playground", "/graphql"))
 	http.Handle("/graphql", corsMiddleware.Handler(jwtMiddleware.Handler(srv)))
 	http.Handle("/api/user", corsMiddleware.Handler(endpoints.User(db)))
-	http.Handle("/api/auth/login", corsMiddleware.Handler(endpoints.Login(db)))
+	http.Handle("/api/auth/login", corsMiddleware.Handler(loginEndpoint.Handler()))
 	http.Handle("/api/auth/refresh", corsMiddleware.Handler(endpoints.Refresh(db)))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
-}
-
-type CorsMiddleware struct {
-	Cors string
-}
-
-func (c *CorsMiddleware) Handler(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", c.Cors)
-
-		if r.Method == "OPTIONS" {
-			w.Header().Set("Access-Control-Allow-Headers", "*")
-			w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-			w.WriteHeader(http.StatusNoContent)
-		}
-
-		h.ServeHTTP(w, r)
-	})
 }

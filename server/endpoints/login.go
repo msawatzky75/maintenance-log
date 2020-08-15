@@ -3,7 +3,6 @@ package endpoints
 import (
 	"encoding/json"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -12,22 +11,45 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type authClaims struct {
+type Login struct {
+	DB                 *gorm.DB
+	JWTSecret          []byte
+	AccessTokenCookie  string
+	AccessTokenLife    time.Duration
+	RefreshTokenCookie string
+	RefreshTokenLife   time.Duration
+}
+
+// Handler for login endpoint
+func (l *Login) Handler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "POST":
+			l.signin(w, r)
+		}
+	}
+}
+
+type AccessTokenClaims struct {
 	UserID string `json:"userId"`
 	jwt.StandardClaims
 }
-type login struct {
+type RefreshTokenClaims struct {
+	UserID string `json:"userId"`
+	jwt.StandardClaims
+}
+type credentials struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-func validateUser(db *gorm.DB, l login) (u model.User, e error) {
-	e = db.Where("email = ?", l.Email).First(&u).Error
+func (l *Login) getUser(c credentials) (u *model.User, e error) {
+	e = l.DB.Where("email = ?", c.Email).First(u).Error
 	if e != nil {
 		return
 	}
 
-	e = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(l.Password))
+	e = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(c.Password))
 	if e != nil {
 		return
 	}
@@ -35,56 +57,61 @@ func validateUser(db *gorm.DB, l login) (u model.User, e error) {
 	return
 }
 
-func createTokens(userID string) (t string, rt string, err error) {
-	// Generate encoded token and send it as response.
-	t, err = jwt.NewWithClaims(jwt.SigningMethodHS256, &authClaims{
-		userID,
-		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),
-		},
-	}).SignedString([]byte(os.Getenv("JWT_SECRET")))
+// Create the Signin handler
+func (l *Login) signin(w http.ResponseWriter, r *http.Request) {
+	var creds credentials
+
+	// Get the JSON body and decode into credentials
+	err := json.NewDecoder(r.Body).Decode(&creds)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	rt, err = jwt.NewWithClaims(jwt.SigningMethodHS256, &authClaims{
-		userID,
-		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 7).Unix(),
-		},
-	}).SignedString([]byte(os.Getenv("JWT_SECRET")))
+	u, err := l.getUser(creds)
 
-	return
-}
-
-func loginPOST(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
-	var l login
-
-	err := json.NewDecoder(r.Body).Decode(&l)
 	if err != nil {
-		panic(err)
-	}
-
-	user, err := validateUser(db, l)
-	if err != nil {
-		http.Error(w, "unauthorized", 401)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	t, rt, err := createTokens(user.ID.String())
-
-	json.NewEncoder(w).Encode(map[string]string{
-		"access_token":  t,
-		"refresh_token": rt,
+	accessTokenExiprationTime := time.Now().Add(5 * time.Minute)
+	accessTokenClaims := &AccessTokenClaims{
+		UserID: u.ID.String(),
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: accessTokenExiprationTime.Unix(),
+		},
+	}
+	accessTokenString, err := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims).SignedString(l.JWTSecret)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	defer http.SetCookie(w, &http.Cookie{
+		Name:     l.AccessTokenCookie,
+		Value:    accessTokenString,
+		Expires:  accessTokenExiprationTime,
+		HttpOnly: true,
+		Secure:   true,
 	})
-}
 
-// Login enpoint handler
-func Login(db *gorm.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case "POST":
-			loginPOST(db, w, r)
-		}
+	refreshTokenExiprationTime := time.Now().Add(5 * time.Minute)
+	refreshTokenClaims := &RefreshTokenClaims{
+		UserID: u.ID.String(),
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: refreshTokenExiprationTime.Unix(),
+		},
 	}
+	refreshTokenString, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshTokenClaims).SignedString(l.JWTSecret)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	defer http.SetCookie(w, &http.Cookie{
+		Name:     l.RefreshTokenCookie,
+		Value:    refreshTokenString,
+		Expires:  refreshTokenExiprationTime,
+		HttpOnly: true,
+		Secure:   true,
+	})
 }
