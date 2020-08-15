@@ -60,6 +60,7 @@ input UserPreferenceInput {
 
 type Query {
   getUser(id: String): User!
+  getVehicle(id: String!): Vehicle!
 }
 
 type Mutation {

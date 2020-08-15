@@ -54,6 +54,7 @@ func GetVehicleIDs(vs []*model.Vehicle) []uuid.UUID {
 	return vsm
 }
 
+// GetVehicleLogs returns logs for a vehicle
 func GetVehicleLogs(DB *gorm.DB, ids []uuid.UUID, filter model.LogsFilter) ([]model.Log, error) {
 	var (
 		ml   []model.MaintenanceLog

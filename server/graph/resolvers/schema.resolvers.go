@@ -10,6 +10,7 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/msawatzky75/maintenence-log/server/graph/generated"
 	"github.com/msawatzky75/maintenence-log/server/graph/model"
+	uuid "github.com/satori/go.uuid"
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, data model.UserInput) (*model.User, error) {
@@ -232,6 +233,16 @@ func (r *queryResolver) GetUser(ctx context.Context, id *string) (*model.User, e
 	}
 
 	return u, nil
+}
+
+func (r *queryResolver) GetVehicle(ctx context.Context, id string) (*model.Vehicle, error) {
+	var v model.Vehicle
+	uid, err := uuid.FromString(id)
+	if err != nil {
+		return &v, err
+	}
+	r.DB.Where("id = ?", uid).Find(&v)
+	return &v, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
