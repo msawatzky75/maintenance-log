@@ -10,6 +10,7 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/msawatzky75/maintenence-log/server/graph/generated"
 	"github.com/msawatzky75/maintenence-log/server/graph/model"
+	"github.com/msawatzky75/maintenence-log/server/middleware"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -218,7 +219,7 @@ func (r *queryResolver) GetUser(ctx context.Context, id *string) (*model.User, e
 		u   *model.User
 		err error
 	)
-	uid := ctx.Value("user").(*jwt.Token).Claims.(jwt.MapClaims)["userId"].(string)
+	uid := (*ctx.Value(middleware.JwtContextKey).(*jwt.MapClaims))["userId"].(string)
 
 	if id != nil {
 		u, err = ValidateUser(*id, r.DB)

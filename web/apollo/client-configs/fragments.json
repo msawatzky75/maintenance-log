@@ -1,0 +1,176 @@
+{
+	"__schema": {
+		"types": [
+			{
+				"kind": "INPUT_OBJECT",
+				"name": "UserPreferenceInput",
+				"possibleTypes": []
+			},
+			{
+				"kind": "INPUT_OBJECT",
+				"name": "LogsFilter",
+				"possibleTypes": []
+			},
+			{
+				"kind": "OBJECT",
+				"name": "FluidValue",
+				"possibleTypes": []
+			},
+			{
+				"kind": "INPUT_OBJECT",
+				"name": "VehicleInput",
+				"possibleTypes": []
+			},
+			{
+				"kind": "INPUT_OBJECT",
+				"name": "DistanceValueInput",
+				"possibleTypes": []
+			},
+			{
+				"kind": "INPUT_OBJECT",
+				"name": "MaintenanceLogInput",
+				"possibleTypes": []
+			},
+			{
+				"kind": "INPUT_OBJECT",
+				"name": "UserInput",
+				"possibleTypes": []
+			},
+			{
+				"kind": "OBJECT",
+				"name": "FuelLog",
+				"possibleTypes": []
+			},
+			{
+				"kind": "ENUM",
+				"name": "FluidUnit",
+				"possibleTypes": []
+			},
+			{
+				"kind": "OBJECT",
+				"name": "Mutation",
+				"possibleTypes": []
+			},
+			{
+				"kind": "OBJECT",
+				"name": "User",
+				"possibleTypes": []
+			},
+			{
+				"kind": "SCALAR",
+				"name": "Time",
+				"possibleTypes": []
+			},
+			{
+				"kind": "INPUT_OBJECT",
+				"name": "FluidValueInput",
+				"possibleTypes": []
+			},
+			{
+				"kind": "INPUT_OBJECT",
+				"name": "FuelLogInput",
+				"possibleTypes": []
+			},
+			{
+				"kind": "OBJECT",
+				"name": "Query",
+				"possibleTypes": []
+			},
+			{
+				"kind": "OBJECT",
+				"name": "OilChangeLog",
+				"possibleTypes": []
+			},
+			{
+				"kind": "OBJECT",
+				"name": "UserPreference",
+				"possibleTypes": []
+			},
+			{
+				"kind": "OBJECT",
+				"name": "Vehicle",
+				"possibleTypes": []
+			},
+			{
+				"kind": "SCALAR",
+				"name": "Int",
+				"possibleTypes": []
+			},
+			{
+				"kind": "SCALAR",
+				"name": "ID",
+				"possibleTypes": []
+			},
+			{
+				"kind": "OBJECT",
+				"name": "MaintenanceLog",
+				"possibleTypes": []
+			},
+			{
+				"kind": "INTERFACE",
+				"name": "Log",
+				"possibleTypes": [
+					{
+						"name": "MaintenanceLog"
+					},
+					{
+						"name": "FuelLog"
+					},
+					{
+						"name": "OilChangeLog"
+					}
+				]
+			},
+			{
+				"kind": "OBJECT",
+				"name": "MoneyValue",
+				"possibleTypes": []
+			},
+			{
+				"kind": "INPUT_OBJECT",
+				"name": "MoneyValueInput",
+				"possibleTypes": []
+			},
+			{
+				"kind": "INPUT_OBJECT",
+				"name": "OilChangeLogInput",
+				"possibleTypes": []
+			},
+			{
+				"kind": "SCALAR",
+				"name": "String",
+				"possibleTypes": []
+			},
+			{
+				"kind": "SCALAR",
+				"name": "Boolean",
+				"possibleTypes": []
+			},
+			{
+				"kind": "ENUM",
+				"name": "MoneyUnit",
+				"possibleTypes": []
+			},
+			{
+				"kind": "INPUT_OBJECT",
+				"name": "DateFilter",
+				"possibleTypes": []
+			},
+			{
+				"kind": "SCALAR",
+				"name": "Float",
+				"possibleTypes": []
+			},
+			{
+				"kind": "ENUM",
+				"name": "DistanceUnit",
+				"possibleTypes": []
+			},
+			{
+				"kind": "OBJECT",
+				"name": "DistanceValue",
+				"possibleTypes": []
+			}
+		]
+	}
+}

@@ -8,7 +8,7 @@ export default {
 	 ** Nuxt target
 	 ** See https://nuxtjs.org/api/configuration-target
 	 */
-	target: 'static',
+	target: 'server',
 	/*
 	 ** Headers of the page
 	 ** See https://nuxtjs.org/api/configuration-head
@@ -58,41 +58,78 @@ export default {
 	],
 
 	axios: {
-		baseURL: 'http://localhost:4000',
+		proxy: true,
+		// credentials: true,
 	},
+
 	auth: {
-		cookie: false,
+		// cookie: false,
 		strategies: {
 			local: {
 				scheme: 'refresh',
 				token: {
-					property: 'access_token',
-					maxAge: 60 * 15, // 15 minutes
-					type: 'Bearer',
+					maxAge: 60 * 15,
+					property: false,
+					required: false,
+					type: false,
 				},
 				refreshToken: {
-					property: 'refresh_token',
-					data: 'refresh_token',
-					maxAge: 60 * 60 * 24 * 7, // 7 days
+					maxAge: 60 * 60 * 24 * 7,
+					property: false,
+					required: false,
+					tokenRequired: false,
 				},
 				endpoints: {
-					login: { url: '/api/auth/login', method: 'post' },
-					refresh: { url: '/api/auth/refresh', method: 'post' },
 					user: false,
+					login: {
+						url: '/api/auth/login',
+						method: 'post',
+						propertyName: false,
+					},
+					logout: {
+						url: '/api/auth/logout',
+						method: 'post',
+						propertyName: false,
+					},
+					refresh: {
+						url: '/api/auth/refresh',
+						method: 'post',
+						propertyName: false,
+					},
 				},
 			},
 		},
+		redirect: {
+			login: '/login',
+			logout: '/login',
+			home: '/dashboard',
+		},
+	},
+
+	proxy: {
+		'/api/': 'http://localhost:4000',
+		'/graphql': 'http://localhost:4000',
 	},
 	apollo: {
-		authenticationType: 'Bearer',
-		tokenName: 'auth._token.local',
+		defaultOptions: {},
 		clientConfigs: {
 			default: '@/apollo/client-configs/default.ts',
 		},
 	},
+
+	router: {
+		middleware: ['ssr-cookie'],
+	},
+
 	/*
 	 ** Build configuration
 	 ** See https://nuxtjs.org/api/configuration-build/
 	 */
-	build: {},
+	build: {
+		extend(config, ctx) {
+			if (ctx.isDev) {
+				config.devtool = ctx.isClient ? 'source-map' : 'inline-source-map'
+			}
+		},
+	},
 }

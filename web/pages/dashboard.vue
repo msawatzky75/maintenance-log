@@ -13,7 +13,7 @@
 					</b-table-column>
 
 					<b-table-column field="vehicle" label="Vehicle">
-						<nuxt-link :to="`/vehicle${props.row.vehicle.id}`">
+						<nuxt-link :to="`/vehicle/${props.row.vehicle.id}`">
 							{{ props.row.vehicle.year }}
 							{{ props.row.vehicle.make }}
 							{{ props.row.vehicle.model }}
@@ -26,12 +26,13 @@
 				</template>
 			</b-table>
 		</section>
+
 		<section class="section">
 			<h3 class="is-size-3">Vehicles</h3>
 			<b-table :data="user.vehicles" :mobile-cards="false">
 				<template slot-scope="props">
 					<b-table-column field="id" label="Link" sortable>
-						<nuxt-link :to="`/vehicle${props.row.id}`">
+						<nuxt-link :to="`/vehicle/${props.row.id}`">
 							Link
 						</nuxt-link>
 					</b-table-column>
@@ -48,9 +49,8 @@
 						{{ props.row.model }}
 					</b-table-column>
 
-					<b-table-column field="odometer" label="Odometer">
-						{{ formatNumber(parseInt(props.row.odometer.value)) }}
-						{{ props.row.odometer.type }}s
+					<b-table-column field="odometer" label="Odometer" numeric>
+						<odometer v-bind="props.row.odometer" />
 					</b-table-column>
 				</template>
 			</b-table>
@@ -60,9 +60,12 @@
 
 <script>
 import UserQuery from '@/queries/user.graphql'
-import numeral from 'numeral'
+import Odometer from '@/components/odometer'
 
 export default {
+	components: {
+		Odometer,
+	},
 	data() {
 		return {
 			user: {
@@ -78,11 +81,6 @@ export default {
 				variables: {},
 			})
 		).data.getUser
-	},
-	methods: {
-		formatNumber(n) {
-			return numeral(n).format('0,0')
-		},
 	},
 }
 </script>

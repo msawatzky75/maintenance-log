@@ -2,16 +2,18 @@ package middleware
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
+const JwtContextKey string = "user"
+
 type Jwt struct {
 	AccessTokenCookie  string
 	RefreshTokenCookie string
-	ContextKey         string
-	Secret             string
+	Secret             []byte
 }
 
 // Handler is the Jwt middleware handler
@@ -23,10 +25,12 @@ func (j *Jwt) Handler(h http.Handler) http.Handler {
 			if err == http.ErrNoCookie {
 				// If the cookie is not set, return an unauthorized status
 				w.WriteHeader(http.StatusUnauthorized)
+				log.Println("No cookie :(")
 				return
 			}
 			// For any other type of error, return a bad request status
 			w.WriteHeader(http.StatusBadRequest)
+			log.Println("Failed to read cookie", err)
 			return
 		}
 
@@ -53,8 +57,9 @@ func (j *Jwt) Handler(h http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), &j.ContextKey, claims)
+		ctx := context.WithValue(r.Context(), JwtContextKey, claims)
 
+		log.Println("Cookie found and accepted, continuing...")
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

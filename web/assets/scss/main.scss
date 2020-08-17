@@ -4,9 +4,22 @@ $primary: hsla(0, 0, 16%, 1);
 $primary-invert: findColorInvert($primary);
 
 // Links
-$link: $primary;
-$link-invert: $primary-invert;
-$link-focus-border: $primary;
+// $link: $primary;
+// $link-invert: $primary-invert;
+// $link-focus-border: $primary;
+$text: $grey;
+$text-light: $grey-dark;
+$text-strong: $grey-dark;
+
+$scheme-main : $black;
+$scheme-main-bis: $black-bis;
+$scheme-main-ter: $black-ter;
+
+$scheme-invert-main: $white;
+$scheme-invert-main-bis: $white-bis;
+$scheme-invert-main-ter: $white-ter;
+
+$background: red;
 
 // Setup $colors to use as bulma classes (e.g. 'is-twitter')
 $colors: (
@@ -20,6 +33,14 @@ $colors: (
     "warning": ($warning, $warning-invert),
     "danger": ($danger, $danger-invert),
 );
+
+.has-text-underlined {
+    text-decoration: underline;
+}
+
+body {
+    min-height: 100vh;
+}
 
 @import '~bulma';
 @import '~buefy/src/scss/buefy';
