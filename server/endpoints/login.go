@@ -125,7 +125,7 @@ func (l *Login) createAccessTokenCookie(userID string) (*http.Cookie, error) {
 		Value:    accessTokenString,
 		Expires:  accessTokenExiprationTime,
 		HttpOnly: true,
-		// Secure:   true,
+		Secure:   true,
 		Domain:   l.CookieDomain,
 		Path:     "/graphql",
 		SameSite: http.SameSiteStrictMode,

@@ -2,7 +2,6 @@ package endpoints
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/msawatzky75/maintenence-log/server/graph/model"
@@ -59,23 +58,11 @@ func (l *Login) refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessTokenExiprationTime := time.Now().Add(5 * time.Minute)
-	accessTokenClaims := &AccessTokenClaims{
-		UserID: u.ID.String(),
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: accessTokenExiprationTime.Unix(),
-		},
-	}
-	accessTokenString, err := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims).SignedString(l.JWTSecret)
+	accessTokenCookie, err := l.createAccessTokenCookie(u.ID.String())
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	defer http.SetCookie(w, &http.Cookie{
-		Name:     l.AccessTokenCookie,
-		Value:    accessTokenString,
-		Expires:  accessTokenExiprationTime,
-		HttpOnly: true,
-		Secure:   true,
-	})
+
+	http.SetCookie(w, accessTokenCookie)
 }

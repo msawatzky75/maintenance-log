@@ -68,7 +68,7 @@ export default {
 		cookie: false,
 		strategies: {
 			local: {
-				scheme: 'local',
+				scheme: 'refresh',
 				token: {
 					maxAge: 60 * 15,
 					property: false,
