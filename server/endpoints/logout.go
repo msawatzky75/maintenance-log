@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-// Handler for login endpoint
+// LogoutHandler deletes both AccessTokenCookie and RefreshTokenCookie
 func (l *Login) LogoutHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "OPTIONS" {
@@ -12,5 +12,6 @@ func (l *Login) LogoutHandler() http.HandlerFunc {
 		}
 
 		http.SetCookie(w, &http.Cookie{Name: l.AccessTokenCookie, MaxAge: -1})
+		http.SetCookie(w, &http.Cookie{Name: l.RefreshTokenCookie, MaxAge: -1})
 	}
 }

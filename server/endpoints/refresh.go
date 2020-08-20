@@ -8,7 +8,7 @@ import (
 	"github.com/msawatzky75/maintenence-log/server/graph/model"
 )
 
-// Refresh handles refreshing jwt tokens
+// RefreshHandler handles refreshing jwt tokens
 func (l *Login) RefreshHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {

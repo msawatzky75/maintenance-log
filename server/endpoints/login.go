@@ -11,6 +11,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Login contains the options for the login endpoints
 type Login struct {
 	DB                 *gorm.DB
 	JWTSecret          []byte
@@ -21,15 +22,17 @@ type Login struct {
 	CookieDomain       string
 }
 
+// Error allows for singleton errors
 type Error string
 
 func (err Error) Error() string {
 	return string(err)
 }
 
+// ErrUserNotFound is a singleton error
 const ErrUserNotFound = Error("could not find user")
 
-// Handler for login endpoint
+// LoginHandler for login endpoint
 func (l *Login) LoginHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -39,10 +42,13 @@ func (l *Login) LoginHandler() http.HandlerFunc {
 	}
 }
 
+// AccessTokenClaims is data in the AccessTokenCookie
 type AccessTokenClaims struct {
 	UserID string `json:"userId"`
 	jwt.StandardClaims
 }
+
+// RefreshTokenClaims is data in the RefreshTokenCookie
 type RefreshTokenClaims struct {
 	UserID string `json:"userId"`
 	jwt.StandardClaims
@@ -67,7 +73,6 @@ func (l *Login) getUser(c credentials) (*model.User, error) {
 	return &u, nil
 }
 
-// Create the Signin handler
 func (l *Login) login(w http.ResponseWriter, r *http.Request) {
 	var creds credentials
 
@@ -99,7 +104,7 @@ func (l *Login) login(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, refreshTokenCookie)
 
-	json.NewEncoder(w).Encode(map[string]string{"test": "tickle"})
+	json.NewEncoder(w).Encode(map[string]string{"userId": u.ID.String()})
 }
 
 func (l *Login) createAccessTokenCookie(userID string) (*http.Cookie, error) {
@@ -120,10 +125,10 @@ func (l *Login) createAccessTokenCookie(userID string) (*http.Cookie, error) {
 		Value:    accessTokenString,
 		Expires:  accessTokenExiprationTime,
 		HttpOnly: true,
-		Secure:   true,
+		// Secure:   true,
 		Domain:   l.CookieDomain,
 		Path:     "/graphql",
-		SameSite: http.SameSiteDefaultMode,
+		SameSite: http.SameSiteStrictMode,
 	}, nil
 }
 
@@ -148,6 +153,6 @@ func (l *Login) createRefreshTokenCookie(userID string) (*http.Cookie, error) {
 		Secure:   true,
 		Domain:   l.CookieDomain,
 		Path:     "/api/auth/refresh",
-		SameSite: http.SameSiteDefaultMode,
+		SameSite: http.SameSiteStrictMode,
 	}, nil
 }

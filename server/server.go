@@ -70,7 +70,7 @@ func main() {
 		AccessTokenLife:    time.Minute * 5,
 		RefreshTokenCookie: "refresh_token",
 		RefreshTokenLife:   time.Hour * 24 * 7,
-		CookieDomain:       "localhost",
+		CookieDomain:       os.Getenv("HOST_DOMAIN"),
 	}
 
 	http.Handle("/graphiql", playground.Handler("GraphQL playground", "/graphql"))

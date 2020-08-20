@@ -27,10 +27,11 @@ func (j *Jwt) Handler(h http.Handler) http.Handler {
 				w.WriteHeader(http.StatusUnauthorized)
 				log.Println("No cookie :(")
 				return
+			} else {
+				// For any other type of error, return a bad request status
+				w.WriteHeader(http.StatusBadRequest)
+				log.Println("Failed to read cookie", err)
 			}
-			// For any other type of error, return a bad request status
-			w.WriteHeader(http.StatusBadRequest)
-			log.Println("Failed to read cookie", err)
 			return
 		}
 

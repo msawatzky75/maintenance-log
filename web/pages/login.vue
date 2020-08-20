@@ -25,7 +25,9 @@
 </template>
 
 <script>
-export default {
+import Vue from 'vue'
+
+export default Vue.extend({
 	data() {
 		return {
 			login: {
@@ -41,9 +43,14 @@ export default {
 					data: this.login,
 				})
 				.then(() => {
-					console.log('Success')
+					if (this.$store.state) {
+						// console.log(this.$store.state.vehicle)
+					}
+				})
+				.catch((err) => {
+					console.error(err)
 				})
 		},
 	},
-}
+})
 </script>

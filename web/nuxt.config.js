@@ -3,12 +3,12 @@ export default {
 	 ** Nuxt rendering mode
 	 ** See https://nuxtjs.org/api/configuration-mode
 	 */
-	mode: 'universal',
+	mode: 'spa',
 	/*
 	 ** Nuxt target
 	 ** See https://nuxtjs.org/api/configuration-target
 	 */
-	target: 'server',
+	target: 'static',
 	/*
 	 ** Headers of the page
 	 ** See https://nuxtjs.org/api/configuration-head
@@ -24,7 +24,9 @@ export default {
 				content: process.env.npm_package_description || '',
 			},
 		],
-		link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+		link: [
+			// { rel: 'icon', type: 'image/png', href: require('@/assets/hammer.png') },
+		],
 	},
 	/*
 	 ** Global CSS
@@ -58,25 +60,23 @@ export default {
 	],
 
 	axios: {
-		proxy: true,
-		// credentials: true,
+		baseURL: 'http://localhost:4000/',
+		browserBaseURL: 'http://localhost:4000/',
+		credentials: true,
 	},
-
 	auth: {
-		// cookie: false,
+		cookie: false,
 		strategies: {
 			local: {
-				scheme: 'refresh',
+				scheme: 'local',
 				token: {
 					maxAge: 60 * 15,
 					property: false,
-					required: false,
 					type: false,
 				},
 				refreshToken: {
 					maxAge: 60 * 60 * 24 * 7,
 					property: false,
-					required: false,
 					tokenRequired: false,
 				},
 				endpoints: {
@@ -99,37 +99,24 @@ export default {
 				},
 			},
 		},
-		redirect: {
-			login: '/login',
-			logout: '/login',
-			home: '/dashboard',
-		},
-	},
-
-	proxy: {
-		'/api/': 'http://localhost:4000',
-		'/graphql': 'http://localhost:4000',
 	},
 	apollo: {
-		defaultOptions: {},
 		clientConfigs: {
 			default: '@/apollo/client-configs/default.ts',
 		},
 	},
 
-	router: {
-		middleware: ['ssr-cookie'],
-	},
+	router: {},
 
 	/*
 	 ** Build configuration
 	 ** See https://nuxtjs.org/api/configuration-build/
 	 */
 	build: {
-		extend(config, ctx) {
-			if (ctx.isDev) {
-				config.devtool = ctx.isClient ? 'source-map' : 'inline-source-map'
-			}
-		},
+		// extend(config, ctx) {
+		// 	if (ctx.isDev) {
+		// 		config.devtool = ctx.isClient ? 'source-map' : 'inline-source-map'
+		// 	}
+		// },
 	},
 }
