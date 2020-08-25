@@ -64,6 +64,7 @@ export default {
 		browserBaseURL: 'http://localhost:4000/',
 		credentials: true,
 	},
+
 	auth: {
 		cookie: false,
 		strategies: {
@@ -99,11 +100,18 @@ export default {
 				},
 			},
 		},
+		redirect: {
+			login: '/login',
+			logout: '/',
+			home: '/home',
+		},
 	},
+
 	apollo: {
 		clientConfigs: {
 			default: '@/apollo/client-configs/default.ts',
 		},
+		errorHandler: '@/plugins/apollo-error-handler.ts', // why even bother? its not like it works
 	},
 
 	router: {},
@@ -113,10 +121,10 @@ export default {
 	 ** See https://nuxtjs.org/api/configuration-build/
 	 */
 	build: {
-		// extend(config, ctx) {
-		// 	if (ctx.isDev) {
-		// 		config.devtool = ctx.isClient ? 'source-map' : 'inline-source-map'
-		// 	}
-		// },
+		extend(config, ctx) {
+			if (ctx.isDev) {
+				config.devtool = ctx.isClient ? 'source-map' : 'inline-source-map'
+			}
+		},
 	},
 }

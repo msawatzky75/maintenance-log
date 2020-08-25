@@ -14,5 +14,10 @@ module.exports = {
 	plugins: ['prettier'],
 	rules: {
 		indent: ['error', 'tab'],
+		'no-unused-vars': 'off',
+		'@typescript-eslint/no-unused-vars': [
+			'warn',
+			{ varsIgnorePattern: '_|d', args: 'after-used' },
+		],
 	},
 }

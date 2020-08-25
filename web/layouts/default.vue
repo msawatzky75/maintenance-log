@@ -27,23 +27,16 @@
 </template>
 
 <script>
+import debug from 'debug'
+
+const d = debug('ml.layouts.default')
+
 export default {
-	middleware: 'auth',
-	data() {
-		return {
-			items: [
-				{
-					title: 'Home',
-					icon: 'home',
-					to: { name: 'index' },
-				},
-				{
-					title: 'Inspire',
-					icon: 'lightbulb',
-					to: { name: 'inspire' },
-				},
-			],
-		}
-	},
+	middleware: [
+		'auth',
+		async function ({ redirect, store }) {
+			await store.dispatch('user/fetchUser')
+		},
+	],
 }
 </script>

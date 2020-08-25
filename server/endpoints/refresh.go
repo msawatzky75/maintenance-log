@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
@@ -65,4 +66,6 @@ func (l *Login) refresh(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, accessTokenCookie)
+
+	json.NewEncoder(w).Encode(map[string]string{"userId": u.ID.String()})
 }

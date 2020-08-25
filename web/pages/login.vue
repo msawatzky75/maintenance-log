@@ -43,9 +43,7 @@ export default Vue.extend({
 					data: this.login,
 				})
 				.then(() => {
-					if (this.$store.state) {
-						// console.log(this.$store.state.vehicle)
-					}
+					this.$store.dispatch('user/fetchUser')
 				})
 				.catch((err) => {
 					console.error(err)
