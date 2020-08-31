@@ -67,7 +67,7 @@ func main() {
 		DB:                 db,
 		JWTSecret:          []byte(os.Getenv("JWT_SECRET")),
 		AccessTokenCookie:  "access_token",
-		AccessTokenLife:    time.Minute * 5,
+		AccessTokenLife:    time.Minute * 15,
 		RefreshTokenCookie: "refresh_token",
 		RefreshTokenLife:   time.Hour * 24 * 7,
 		CookieDomain:       os.Getenv("HOST_DOMAIN"),

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -25,6 +26,11 @@ func (j *Jwt) Handler(h http.Handler) http.Handler {
 			if err == http.ErrNoCookie {
 				// If the cookie is not set, return an unauthorized status
 				w.WriteHeader(http.StatusUnauthorized)
+
+				if r.Header.Get("content-type") == "application/json" {
+
+					json.NewEncoder(w).Encode(map[string]string{"error": "Unauthorized/No Cookie"})
+				}
 				log.Println("No cookie :(")
 				return
 			} else {

@@ -108,12 +108,8 @@ func (l *Login) login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (l *Login) createAccessTokenCookie(userID string) (*http.Cookie, error) {
-	accessTokenExiprationTime := time.Now().Add(l.AccessTokenLife)
 	accessTokenClaims := &AccessTokenClaims{
 		UserID: userID,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: accessTokenExiprationTime.Unix(),
-		},
 	}
 	accessTokenString, err := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims).SignedString(l.JWTSecret)
 	if err != nil {
@@ -123,7 +119,7 @@ func (l *Login) createAccessTokenCookie(userID string) (*http.Cookie, error) {
 	return &http.Cookie{
 		Name:     l.AccessTokenCookie,
 		Value:    accessTokenString,
-		Expires:  accessTokenExiprationTime,
+		MaxAge:   int(l.AccessTokenLife.Round(time.Minute).Seconds()),
 		HttpOnly: true,
 		Secure:   true,
 		Domain:   l.CookieDomain,
@@ -133,12 +129,8 @@ func (l *Login) createAccessTokenCookie(userID string) (*http.Cookie, error) {
 }
 
 func (l *Login) createRefreshTokenCookie(userID string) (*http.Cookie, error) {
-	refreshTokenExiprationTime := time.Now().Add(l.RefreshTokenLife)
 	refreshTokenClaims := &RefreshTokenClaims{
 		UserID: userID,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: refreshTokenExiprationTime.Unix(),
-		},
 	}
 	refreshTokenString, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshTokenClaims).SignedString(l.JWTSecret)
 	if err != nil {
@@ -148,7 +140,7 @@ func (l *Login) createRefreshTokenCookie(userID string) (*http.Cookie, error) {
 	return &http.Cookie{
 		Name:     l.RefreshTokenCookie,
 		Value:    refreshTokenString,
-		Expires:  refreshTokenExiprationTime,
+		MaxAge:   int(l.RefreshTokenLife.Round(time.Minute).Seconds()),
 		HttpOnly: true,
 		Secure:   true,
 		Domain:   l.CookieDomain,
