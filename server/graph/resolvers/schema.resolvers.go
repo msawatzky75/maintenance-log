@@ -43,19 +43,17 @@ func (r *mutationResolver) CreateUser(ctx context.Context, data model.UserInput)
 }
 
 func (r *mutationResolver) CreateVehicle(ctx context.Context, data model.VehicleInput) (*model.Vehicle, error) {
-	u, err := ValidateUser(data.UserID, r.DB)
+	uid, err := uuid.FromString((*ctx.Value(middleware.JwtContextKey).(*jwt.MapClaims))["userId"].(string))
 	if err != nil {
-		return &model.Vehicle{}, err
+		return nil, err
 	}
-
-	fmt.Println(u.ID)
 
 	v := &model.Vehicle{
 		Make:     data.Make,
 		Model:    data.Model,
 		Year:     data.Year,
 		Odometer: &model.DistanceValue{Value: &data.Odometer.Value, Type: &data.Odometer.Type},
-		UserID:   &u.ID,
+		UserID:   &uid,
 	}
 
 	r.DB.Create(v)

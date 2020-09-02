@@ -94,7 +94,6 @@ type VehicleInput struct {
 	Model    string              `json:"model"`
 	Year     int                 `json:"year"`
 	Odometer *DistanceValueInput `json:"odometer"`
-	UserID   string              `json:"userId"`
 }
 
 type DistanceUnit string

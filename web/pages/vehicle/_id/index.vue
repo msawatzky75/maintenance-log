@@ -36,12 +36,15 @@
 </template>
 
 <script>
-import VehicleQuery from '@/queries/vehicle.graphql'
+import VehicleQuery from '@/apollo/queries/vehicle.graphql'
 import Odometer from '@/components/odometer'
 
 export default {
 	validate({ params, store }) {
-		return !!store.state.user.vehicles.find((v) => v.id === params.id)
+		return (
+			store.state.user.vehicles &&
+			!!store.state.user.vehicles.find((v) => v.id === params.id)
+		)
 	},
 	components: {
 		Odometer,

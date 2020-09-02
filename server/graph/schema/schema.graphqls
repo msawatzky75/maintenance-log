@@ -9,7 +9,6 @@ input VehicleInput {
   model: String!
   year: Int!
   odometer: DistanceValueInput!
-  userId: String!
 }
 
 input DistanceValueInput {

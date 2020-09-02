@@ -858,7 +858,6 @@ input VehicleInput {
   model: String!
   year: Int!
   odometer: DistanceValueInput!
-  userId: String!
 }
 
 input DistanceValueInput {
@@ -4790,12 +4789,6 @@ func (ec *executionContext) unmarshalInputVehicleInput(ctx context.Context, obj 
 		case "odometer":
 			var err error
 			it.Odometer, err = ec.unmarshalNDistanceValueInput2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐDistanceValueInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "userId":
-			var err error
-			it.UserID, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}

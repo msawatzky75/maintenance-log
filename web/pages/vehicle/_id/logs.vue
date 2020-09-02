@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import VehicleQuery from '@/queries/vehicle.graphql'
+import VehicleQuery from '@/apollo/queries/vehicle.graphql'
 export default {
 	name: 'Logs',
 	async asyncData({ app, params }) {

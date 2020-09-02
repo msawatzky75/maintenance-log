@@ -1,4 +1,4 @@
-import UserQuery from '@/queries/user.graphql'
+import UserQuery from '@/apollo/queries/user.graphql'
 import debug from 'debug'
 import type { ActionTree, GetterTree, MutationTree } from 'vuex'
 // https://typescript.nuxtjs.org/cookbook/store.html#vanilla
@@ -79,7 +79,12 @@ export const getters: GetterTree<RootState, RootState> = {
 export const actions: ActionTree<RootState, RootState> = {
 	async fetchUser({ commit }) {
 		const client = this.app.apolloProvider.defaultClient
-		const response = await client.query({ query: UserQuery, variables: {} })
-		commit('setUser', response.data.getUser as User)
+		let response = null
+		try {
+			response = await client.query({ query: UserQuery, variables: {} })
+			commit('setUser', response.data.getUser as User)
+		} catch (e) {
+			d('there it goes, erroring again')
+		}
 	},
 }

@@ -20,7 +20,8 @@
 		"graphql-tag": "^2.11.0",
 		"numeral": "^2.0.6",
 		"nuxt": "^2.14.0",
-		"nuxt-buefy": "^0.3.31"
+		"nuxt-buefy": "^0.3.31",
+		"vee-validate": "^3.3.9"
 	},
 	"devDependencies": {
 		"@nuxt/types": "^2.14.0",

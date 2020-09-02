@@ -7,7 +7,10 @@
 		>
 			<div class="navbar-brand">
 				<a class="navbar-item" href="/">
-					<img src="~assets/buefy.png" alt="Buefy" height="28" />
+					<!-- <img src="~assets/buefy.png" alt="Buefy" height="28" /> -->
+					<h1 class="is-size-4 has-text-weight-bold">
+						Maintenance Manager II; Electric Boogaloo
+					</h1>
 				</a>
 
 				<div class="navbar-burger">
@@ -34,8 +37,10 @@ const d = debug('ml.layouts.default')
 export default {
 	middleware: [
 		'auth',
-		async function ({ redirect, store }) {
-			await store.dispatch('user/fetchUser')
+		async function ({ store }) {
+			if (!store.user) {
+				await store.dispatch('user/fetchUser')
+			}
 		},
 	],
 }

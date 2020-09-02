@@ -1,5 +1,7 @@
 <template>
-	<p>{{ formatNumber(value) }} {{ type }}s</p>
+	<p>
+		{{ formatNumber(value) }} {{ type }}{{ value > 1 || value == 0 ? 's' : '' }}
+	</p>
 </template>
 
 <script>

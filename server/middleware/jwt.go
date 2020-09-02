@@ -28,7 +28,6 @@ func (j *Jwt) Handler(h http.Handler) http.Handler {
 				w.WriteHeader(http.StatusUnauthorized)
 
 				if r.Header.Get("content-type") == "application/json" {
-
 					json.NewEncoder(w).Encode(map[string]string{"error": "Unauthorized/No Cookie"})
 				}
 				log.Println("No cookie :(")
