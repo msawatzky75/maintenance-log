@@ -1,7 +1,7 @@
 <template>
 	<section class="section">
-		<h3 class="is-size-3">Logs</h3>
-		<b-table :data="vehicle.logs" :mobile-cards="false">
+		<h3 class="title is-3">Logs</h3>
+		<b-table :data="vehicle.logs || []" :mobile-cards="false">
 			<template slot-scope="props">
 				<b-table-column field="date" label="Date" sortable>
 					{{ props.row.date }}
@@ -24,6 +24,28 @@
 				</b-table-column>
 			</template>
 		</b-table>
+
+		<section v-if="!vehicle.logs">
+			<p>No Logs :(</p>
+		</section>
+
+		<hr />
+
+		<section>
+			<b-button tag="nuxt-link" to="logs/new"> Create New Log</b-button>
+
+			<b-button tag="nuxt-link" to="logs/new/fuel">
+				Create New Fuel Log
+			</b-button>
+
+			<b-button tag="nuxt-link" to="logs/new/maintenence">
+				Create New Maintenence Log
+			</b-button>
+
+			<b-button tag="nuxt-link" to="logs/new/oil">
+				Create New Oil-Change Log
+			</b-button>
+		</section>
 	</section>
 </template>
 

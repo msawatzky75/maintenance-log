@@ -8,7 +8,7 @@
 import numeral from 'numeral'
 
 export default {
-	name: 'Odometer',
+	name: 'DistanceDisplay',
 	props: {
 		value: {
 			type: Number,

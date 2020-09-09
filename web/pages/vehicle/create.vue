@@ -33,7 +33,7 @@
 					/>
 				</b-field>
 
-				<OdometerInput v-model="vehicle.odometer" label="Odometer" />
+				<distance-input v-model="vehicle.odometer" label="Odometer" />
 
 				<b-field>
 					<b-button type="is-primary" native-type="submit">
@@ -49,13 +49,11 @@
 import debug from 'debug'
 import { ValidationProvider, ValidationObserver, extend } from 'vee-validate'
 import createVehicle from '~/apollo/mutations/createVehicle.graphql'
-import OdometerInput from '~/components/odometer-input'
 
 const d = debug('ml.pages.vehicle.create')
 
 export default {
 	components: {
-		OdometerInput,
 		ValidationObserver,
 	},
 	data() {

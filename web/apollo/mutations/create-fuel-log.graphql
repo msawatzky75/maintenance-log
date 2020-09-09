@@ -1,0 +1,5 @@
+mutation ($data: FuelLogInput!) {
+	createFuelLog(data: $data) {
+		id
+	}
+}

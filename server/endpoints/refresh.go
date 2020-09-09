@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
@@ -22,9 +23,11 @@ func (l *Login) refresh(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie(l.RefreshTokenCookie)
 	if err != nil {
 		if err == http.ErrNoCookie {
+			log.Println("refresh: Cookie not found")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
+		log.Println("refresh: Error reading cookie")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -41,13 +44,16 @@ func (l *Login) refresh(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
+			log.Println("refresh: Invalid Signature")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
+		log.Println("refresh: Error parsing refresh token")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if !t.Valid {
+		log.Println("refresh: Invalid Token")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -55,12 +61,14 @@ func (l *Login) refresh(w http.ResponseWriter, r *http.Request) {
 	var u model.User
 	err = l.DB.Where("id = ?", claims.UserID).Find(&u).Error
 	if err != nil {
+		log.Println("refresh: Unable to find user")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	accessTokenCookie, err := l.createAccessTokenCookie(u.ID.String())
 	if err != nil {
+		log.Println("refresh: Unable to create cookie")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

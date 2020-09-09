@@ -59,7 +59,7 @@
 					</b-table-column>
 
 					<b-table-column field="odometer.value" label="Odometer" sortable>
-						<Odometer v-bind="props.row.odometer" />
+						<distance-display v-bind="props.row.odometer" />
 					</b-table-column>
 				</template>
 			</b-table>
@@ -68,12 +68,7 @@
 </template>
 
 <script>
-import Odometer from '@/components/odometer'
-
 export default {
-	components: {
-		Odometer,
-	},
 	validate({ store }) {
 		return !!store.state.user.id
 	},

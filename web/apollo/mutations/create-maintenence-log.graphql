@@ -1,0 +1,6 @@
+mutation ($data: MaintenanceLogInput!) {
+	createMaintenanceLog(data: $data) {
+		id
+	}
+}
+
