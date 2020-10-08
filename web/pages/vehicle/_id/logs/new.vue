@@ -1,9 +1,11 @@
 <template>
 	<section class="section">
-		<h1 class="title">Create A New Log</h1>
+		<h1 class="title">
+			Create A New Log
+		</h1>
 		<section>
-			<b-field label="Log Type">
-				<b-select
+			<BField label="Log Type">
+				<BSelect
 					v-model="selectedLogType"
 					required
 					placeholder="Select a log type"
@@ -11,41 +13,45 @@
 					<option v-for="t in LogTypes" :key="t.type" :value="t">
 						{{ t.name }}
 					</option>
-				</b-select>
-			</b-field>
+				</BSelect>
+			</BField>
 		</section>
 
-		<validation-observer v-slot="{ handleSubmit, reset }">
-			<form @submit.prevent="handleSubmit(submitLog)" @reset.prevent="reset">
-				<section v-if="selectedLogType" class="mt-4">
-					<template v-if="selectedLogType === LogTypes.FuelLog">
-						<fuel-log-input v-model="log" />
-					</template>
+		<form @submit.prevent="submitLog">
+			<section v-if="selectedLogType" class="mt-4">
+				<template v-if="selectedLogType === LogTypes.FuelLog">
+					<FuelLogInput :ref="LogTypes.FuelLog" v-model="log" />
+				</template>
 
-					<template v-else-if="selectedLogType === LogTypes.MaintenenceLog">
-						<maintenence-log-input v-model="log" />
-					</template>
+				<template v-else-if="selectedLogType === LogTypes.MaintenenceLog">
+					<MaintenenceLogInput :ref="LogTypes.MaintenenceLog" v-model="log" />
+				</template>
 
-					<template v-else-if="selectedLogType === LogTypes.OilChangeLog">
-						<oil-change-log-input v-model="log" />
-					</template>
+				<template v-else-if="selectedLogType === LogTypes.OilChangeLog">
+					<OilChangeLogInput :ref="LogTypes.OilChangeLog" v-model="log" />
+				</template>
 
-					<br />
+				<br />
 
-					<b-button type="is-primary" native-type="submit">Create</b-button>
-					<b-button type="is-secondary" native-type="reset">Cancel</b-button>
-					<pre v-if="log">{{ log }}</pre>
-				</section>
-			</form>
-		</validation-observer>
+				<BButton type="is-primary" native-type="submit">
+					Create
+				</BButton>
+				<BButton type="is-secondary" native-type="reset">
+					Cancel
+				</BButton>
+				<pre v-if="log">{{ log }}</pre>
+			</section>
+		</form>
 	</section>
 </template>
 
 <script>
-import { ValidationObserver } from 'vee-validate'
+import debug from 'debug'
 import CreateFuelLog from '~/apollo/mutations/create-fuel-log.graphql'
 import CreateMaintenenceLog from '~/apollo/mutations/create-maintenence-log.graphql'
 import CreateOilChangeLog from '~/apollo/mutations/create-oil-change-log.graphql'
+
+const d = debug('ml.pages.vheicle._id.logs.new')
 
 const LogTypes = {
 	FuelLog: {
@@ -66,7 +72,6 @@ const LogTypes = {
 }
 
 export default {
-	components: { ValidationObserver },
 	data() {
 		return {
 			LogTypes,
@@ -82,7 +87,10 @@ export default {
 	},
 	methods: {
 		async submitLog() {
-			console.dir({ ...this.log, vehicleId: this.$route.params.id })
+			d({ ...this.log, vehicleId: this.$route.params.id })
+			await this.$refs[this.selectedLogType].validate(() => {
+				d('callback to validate')
+			})
 			// await this.$apollo.mutate({
 			// 	mutation: this.selectedLogType._mutation,
 			// 	variables: { data: this.log },

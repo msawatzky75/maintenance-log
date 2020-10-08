@@ -1,61 +1,54 @@
 <template>
 	<section class="section">
-		<h1 class="title">Add New Vehicle</h1>
+		<h1 class="title">
+			Add New Vehicle
+		</h1>
 
 		<pre v-if="errors">{{ errors }}</pre>
 
-		<validation-observer v-slot="{ handleSubmit, reset }">
-			<form
-				@submit.prevent="handleSubmit(createVehicle)"
-				@reset.prevent="reset"
-			>
-				<b-field grouped>
-					<b-input-with-validation
-						v-model="vehicle.make"
-						type="text"
-						placeholder="Make"
-						label="Make"
-						rules="required"
-					/>
-					<b-input-with-validation
-						v-model="vehicle.model"
-						type="text"
-						placeholder="Model"
-						label="Model"
-						rules="required"
-					/>
-					<b-input-with-validation
-						v-model="vehicle.year"
-						type="text"
-						placeholder="Year"
-						label="Year"
-						rules="required|numeric"
-					/>
-				</b-field>
+		<form @submit.prevent="createVehicle">
+			<BField grouped>
+				<BInputWithValidation
+					v-model="vehicle.make"
+					type="text"
+					placeholder="Make"
+					label="Make"
+					rules="required"
+				/>
+				<BInputWithValidation
+					v-model="vehicle.model"
+					type="text"
+					placeholder="Model"
+					label="Model"
+					rules="required"
+				/>
+				<BInputWithValidation
+					v-model="vehicle.year"
+					type="text"
+					placeholder="Year"
+					label="Year"
+					rules="required|numeric"
+				/>
+			</BField>
 
-				<distance-input v-model="vehicle.odometer" label="Odometer" />
+			<DistanceInput v-model="vehicle.odometer" label="Odometer" />
 
-				<b-field>
-					<b-button type="is-primary" native-type="submit">
-						Create
-					</b-button>
-				</b-field>
-			</form>
-		</validation-observer>
+			<BField>
+				<BButton type="is-primary" native-type="submit">
+					Create
+				</BButton>
+			</BField>
+		</form>
 	</section>
 </template>
 
 <script>
 import debug from 'debug'
-import { ValidationProvider, ValidationObserver, extend } from 'vee-validate'
 import createVehicle from '~/apollo/mutations/createVehicle.graphql'
 
 const d = debug('ml.pages.vehicle.create')
 
 export default {
-	components: {
-		ValidationObserver,
-	},
 	data() {
 		return {
 			vehicle: {
