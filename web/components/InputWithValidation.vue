@@ -9,8 +9,8 @@
 </template>
 
 <script lang="ts">
-import debug from 'debug'
 import * as yup from 'yup'
+import debug from 'debug'
 
 const d = debug('ml.components.InputWithValidation')
 export default {

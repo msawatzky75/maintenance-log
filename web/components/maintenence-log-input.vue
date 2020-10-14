@@ -1,18 +1,33 @@
 <template>
 	<section>
-		<b-field label="Date">
-			<b-datepicker
-				v-model="innerValue.date"
-				placeholder="Click to select..."
-				icon="calendar-today"
-				trap-focus
-			>
-			</b-datepicker>
-		</b-field>
+		<div class="columns">
+			<div class="column">
+				<DatepickerWithValidation
+					ref="date"
+					v-model="innerValue.date"
+					label="Date"
+					placeholder="Click to select..."
+					icon="calendar-today"
+					trap-focus
+					required
+				/>
+			</div>
 
-		<b-field label="Notes">
-			<b-input v-model="innerValue.notes" type="textarea" />
-		</b-field>
+			<div class="column">
+				<TypeAmountInput
+					ref="odometer"
+					v-model="innerValue.odometer"
+					:types="$store.state.distanceTypes"
+					label="Odometer"
+					amount-placeholder="Distance Value"
+					type-placeholder="Distance Type"
+				/>
+			</div>
+		</div>
+
+		<BField label="Notes">
+			<BInput v-model="innerValue.notes" type="textarea" />
+		</BField>
 	</section>
 </template>
 
@@ -30,6 +45,7 @@ export default {
 		return {
 			innerValue: {
 				date: null,
+				odometer: null,
 				notes: null,
 			},
 		}
@@ -49,6 +65,19 @@ export default {
 		if (this.value) {
 			this.innerValue = this.value || {}
 		}
+	},
+	methods: {
+		async validate(callback) {
+			const promises = Object.keys(this.$refs).map(async (r) => {
+				if (this.$refs[r].validate instanceof Function) {
+					await this.$refs[r].validate()
+				}
+			})
+
+			return await Promise.all(promises).then(() =>
+				callback instanceof Function ? callback : () => {}
+			)
+		},
 	},
 }
 </script>

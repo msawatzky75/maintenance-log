@@ -1,7 +1,7 @@
 export function state() {
 	return {
 		distanceTypes: [
-			{ value: 'Kilometer', name: 'Kilometer' },
+			{ value: 'Kilometre', name: 'Kilometre' },
 			{ value: 'Mile', name: 'Mile' },
 		],
 		currencyTypes: [

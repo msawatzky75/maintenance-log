@@ -20,7 +20,7 @@
 
 				<template v-if="vehicle && vehicle.logs">
 					<b-table :data="vehicle.logs" :mobile-cards="false">
-						<template slot-scope="props">
+						<template #default="props">
 							<b-table-column field="date" label="Date" sortable>
 								{{ props.row.date }}
 							</b-table-column>
@@ -41,9 +41,11 @@
 					<p>No logs found.</p>
 					<p>
 						Try
-						<nuxt-link :to="`${$route.params.id}/logs`">adding some.</nuxt-link>
-					</p></template
-				>
+						<nuxt-link :to="`${$route.params.id}/logs`">
+							adding some.
+						</nuxt-link>
+					</p>
+				</template>
 			</div>
 		</div>
 	</section>

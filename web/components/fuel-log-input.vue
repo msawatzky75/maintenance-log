@@ -66,7 +66,7 @@
 			<div class="column is-4">
 				<TypeAmountInput
 					ref="odometer"
-					v-model="innerValue.Odometer"
+					v-model="innerValue.odometer"
 					:types="$store.state.distanceTypes"
 					label="Odometer"
 					amount-placeholder="Distance Value"
@@ -108,7 +108,6 @@ export default {
 				fuelAmount: null,
 				fuelPrice: null,
 			},
-			errors: {},
 		}
 	},
 	watch: {
@@ -131,11 +130,7 @@ export default {
 		async validate(callback) {
 			const promises = Object.keys(this.$refs).map(async (r) => {
 				if (this.$refs[r].validate instanceof Function) {
-					try {
-						await this.$refs[r].validate()
-					} catch (e) {
-						d(e)
-					}
+					await this.$refs[r].validate()
 				}
 			})
 

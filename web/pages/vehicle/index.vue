@@ -39,7 +39,7 @@ export default Vue.extend({
 	methods: {
 		selectVehicle(vid: string) {
 			this.$store.commit('user/setDefaultVehicle', vid)
-			this.$router.push({ path: '/vehicle/' + vid })
+			this.$router.push({ name: 'vehicle-id', params: { id: vid } })
 		},
 	},
 })

@@ -12,7 +12,7 @@
 			</BSelect>
 
 			<BInput
-				v-model.number="innerValue.amount"
+				v-model.number="innerValue.value"
 				type="number"
 				:placeholder="amountPlaceholder"
 			/>
@@ -43,15 +43,14 @@ export default Vue.extend({
 			default: () =>
 				yup.object().shape({
 					type: yup.string().nullable().label('Type').required(),
-					amount: yup.number().nullable().label('Amount').required(),
+					value: yup.number().nullable().label('Amount').required(),
 				}),
 		},
 	},
 	data() {
 		return {
-			status: null,
 			innerValue: {
-				amount: null,
+				value: null,
 				type: null,
 			},
 			errors: [],
@@ -70,7 +69,7 @@ export default Vue.extend({
 			handler(newVal) {
 				this.$emit(
 					'input',
-					newVal.amount === '' ? { ...newVal, amount: null } : newVal
+					newVal.value === '' ? { ...newVal, value: null } : newVal
 				)
 			},
 			deep: true,
@@ -101,7 +100,7 @@ export default Vue.extend({
 
 		reset() {
 			this.innerValue = {
-				amount: null,
+				value: null,
 				type: null,
 			}
 			this.errors = []

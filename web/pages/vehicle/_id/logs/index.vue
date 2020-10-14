@@ -1,78 +1,97 @@
 <template>
 	<section class="section">
-		<h3 class="title is-3">Logs</h3>
-		<b-table :data="vehicle.logs || []" :mobile-cards="false">
-			<template slot-scope="props">
-				<b-table-column field="date" label="Date" sortable>
-					{{ props.row.date }}
-				</b-table-column>
+		<h3 class="title is-3">
+			Logs
+		</h3>
 
-				<b-table-column field="__typename" label="Type" sortable>
-					{{ props.row.__typename }}
-				</b-table-column>
+		<section>
+			<BButton tag="nuxt-link" to="logs/new">
+				Create New Log
+			</BButton>
 
-				<b-table-column field="vehicle" label="Vehicle">
-					<nuxt-link :to="`/vehicle/${props.row.vehicle.id}`">
-						{{ props.row.vehicle.year }}
-						{{ props.row.vehicle.make }}
-						{{ props.row.vehicle.model }}
-					</nuxt-link>
-				</b-table-column>
+			<BButton tag="nuxt-link" to="logs/new/fuel">
+				Create New Fuel Log
+			</BButton>
 
-				<b-table-column field="notes" label="Notes" sortable>
-					{{ props.row.date }}
-				</b-table-column>
-			</template>
-		</b-table>
+			<BButton tag="nuxt-link" to="logs/new/maintenence">
+				Create New Maintenence Log
+			</BButton>
 
-		<section v-if="!vehicle.logs">
-			<p>No Logs :(</p>
+			<BButton tag="nuxt-link" to="logs/new/oil">
+				Create New Oil Change Log
+			</BButton>
 		</section>
 
 		<hr />
 
-		<section>
-			<b-button tag="nuxt-link" to="logs/new"> Create New Log</b-button>
+		<template v-if="vehicle">
+			<BTable
+				:data="vehicle.logs || []"
+				:mobile-cards="false"
+				default-sort="date"
+				default-sort-direction="desc"
+				sort-icon="chevron-up"
+			>
+				<template #default="props">
+					<BTableColumn field="date" label="Date" sortable>
+						{{ props.row.date }}
+					</BTableColumn>
 
-			<b-button tag="nuxt-link" to="logs/new/fuel">
-				Create New Fuel Log
-			</b-button>
+					<BTableColumn field="__typename" label="Type" sortable>
+						{{ props.row.__typename }}
+					</BTableColumn>
 
-			<b-button tag="nuxt-link" to="logs/new/maintenence">
-				Create New Maintenence Log
-			</b-button>
+					<BTableColumn field="odometer.value" label="Odometer" sortable>
+						<DistanceDisplay v-bind="props.row.odometer" />
+					</BTableColumn>
 
-			<b-button tag="nuxt-link" to="logs/new/oil">
-				Create New Oil-Change Log
-			</b-button>
-		</section>
+					<BTableColumn field="notes" label="Notes" sortable>
+						{{ props.row.notes }}
+					</BTableColumn>
+				</template>
+			</BTable>
+
+			<section v-if="!vehicle.logs">
+				<p>No Logs :(</p>
+			</section>
+		</template>
+
+		<template v-else>
+			loading...
+		</template>
 	</section>
 </template>
 
 <script>
 import VehicleQuery from '@/apollo/queries/vehicle.graphql'
+import debug from 'debug'
+
+const d = debug('ml.pages.vehicle._id.logs.index')
 export default {
 	name: 'Logs',
-	async asyncData({ app, params }) {
-		const apollo = app.apolloProvider.defaultClient
-
-		return {
-			vehicle: (
-				await apollo.query({
-					query: VehicleQuery,
-					variables: {
-						id: params.id,
-						logFilter: { recent: 5 },
-					},
-				})
-			).data.getVehicle,
-		}
+	apollo: {
+		getVehicle: {
+			query: VehicleQuery,
+			variables() {
+				return {
+					id: this.$route.params.id,
+					logFilter: { recent: 25 }, // TODO pagination here
+				}
+			},
+			result({ data, loading }) {
+				if (!loading) {
+					this.vehicle = data.getVehicle
+				}
+			},
+		},
 	},
 	data() {
 		return {
 			vehicle: null,
-			logs: [],
 		}
+	},
+	async mounted() {
+		await this.$apollo.queries.getVehicle.refetch()
 	},
 }
 </script>

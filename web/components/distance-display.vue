@@ -1,6 +1,7 @@
 <template>
 	<p>
-		{{ formatNumber(value) }} {{ type }}{{ value > 1 || value == 0 ? 's' : '' }}
+		{{ formatNumber(value) }} {{ type
+		}}{{ value > 1 || value === 0 ? 's' : '' }}
 	</p>
 </template>
 
@@ -12,7 +13,7 @@ export default {
 	props: {
 		value: {
 			type: Number,
-			required: true,
+			default: () => 0,
 		},
 		type: {
 			type: String,

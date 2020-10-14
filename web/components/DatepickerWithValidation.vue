@@ -20,7 +20,6 @@ export default Vue.extend({
 		// must be included in props
 		value: {
 			type: Date,
-			required: true,
 			default: null,
 		},
 		type: {

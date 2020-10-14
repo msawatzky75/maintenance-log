@@ -39,6 +39,7 @@
 				<BButton type="is-secondary" native-type="reset">
 					Cancel
 				</BButton>
+				<pre v-if="error">{{ error }}</pre>
 				<pre v-if="log">{{ log }}</pre>
 			</section>
 		</form>
@@ -77,6 +78,7 @@ export default {
 			LogTypes,
 			selectedLogType: LogTypes.FuelLog,
 			log: null,
+			error: null,
 		}
 	},
 	watch: {
@@ -87,14 +89,25 @@ export default {
 	},
 	methods: {
 		async submitLog() {
-			d({ ...this.log, vehicleId: this.$route.params.id })
-			await this.$refs[this.selectedLogType].validate(() => {
-				d('callback to validate')
-			})
-			// await this.$apollo.mutate({
-			// 	mutation: this.selectedLogType._mutation,
-			// 	variables: { data: this.log },
-			// })
+			// d({ ...this.log, vehicleId: this.$route.params.id })
+			try {
+				await this.$refs[this.selectedLogType].validate()
+				try {
+					await this.$apollo.mutate({
+						mutation: this.selectedLogType._mutation,
+						variables: {
+							data: { ...this.log, vehicleId: this.$route.params.id },
+						},
+					})
+					this.$router.push({ name: 'vehicle-id-logs' })
+				} catch (e) {
+					d('Submition Error', e)
+					this.error = e
+				}
+			} catch (e) {
+				d('Validation Error', e)
+				this.error = e
+			}
 		},
 	},
 }
