@@ -16,7 +16,7 @@ export default Vue.extend({
 		// must be included in props
 		value: {
 			type: Date,
-			default: () => null,
+			default: () => null as Date | null,
 		},
 		type: {
 			type: Object,
@@ -27,10 +27,12 @@ export default Vue.extend({
 			required: true,
 		},
 	},
-	data: () => ({
-		innerValue: null as string | null,
-		errors: [] as string[],
-	}),
+	data() {
+		return {
+			innerValue: null as Date | null,
+			errors: [] as string[],
+		}
+	},
 	watch: {
 		// Handles internal model changes.
 		innerValue(newVal) {
@@ -43,11 +45,11 @@ export default Vue.extend({
 	},
 	created() {
 		if (this.value) {
-			this.innerValue = this.value
+			this.innerValue = new Date(this.value)
 		}
 	},
 	methods: {
-		async validate() {
+		async validate(): Promise<void> {
 			try {
 				await this.schema.validate(this.innerValue, { abortEarly: false })
 				this.errors = []
@@ -57,7 +59,7 @@ export default Vue.extend({
 			}
 		},
 
-		reset() {
+		reset(): void {
 			this.innerValue = null
 			this.errors = []
 		},
