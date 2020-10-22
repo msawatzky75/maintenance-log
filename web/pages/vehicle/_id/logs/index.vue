@@ -1,35 +1,21 @@
 <template>
 	<section class="section">
-		<h3 class="title is-3">
-			Logs
-		</h3>
+		<h3 class="title is-3">Logs</h3>
 
 		<section>
-			<BButton
-				tag="nuxt-link"
-				:to="{ name: 'vehicle-id-logs-new', query: { type: 'MaintenenceLog' } }"
-			>
+			<BButton tag="nuxt-link" :to="{ name: 'vehicle-id-logs-new', query: { type: 'MaintenenceLog' } }">
 				Create New Log
 			</BButton>
 
-			<BButton
-				tag="nuxt-link"
-				:to="{ name: 'vehicle-id-logs-new', query: { type: 'FuelLog' } }"
-			>
+			<BButton tag="nuxt-link" :to="{ name: 'vehicle-id-logs-new', query: { type: 'FuelLog' } }">
 				Create New Fuel Log
 			</BButton>
 
-			<BButton
-				tag="nuxt-link"
-				:to="{ name: 'vehicle-id-logs-new', query: { type: 'MaintenenceLog' } }"
-			>
+			<BButton tag="nuxt-link" :to="{ name: 'vehicle-id-logs-new', query: { type: 'MaintenenceLog' } }">
 				Create New Maintenence Log
 			</BButton>
 
-			<BButton
-				tag="nuxt-link"
-				:to="{ name: 'vehicle-id-logs-new', query: { type: 'OilChangeLog' } }"
-			>
+			<BButton tag="nuxt-link" :to="{ name: 'vehicle-id-logs-new', query: { type: 'OilChangeLog' } }">
 				Create New Oil Change Log
 			</BButton>
 		</section>
@@ -68,9 +54,7 @@
 			</section>
 		</template>
 
-		<template v-else>
-			loading...
-		</template>
+		<template v-else> loading... </template>
 	</section>
 </template>
 

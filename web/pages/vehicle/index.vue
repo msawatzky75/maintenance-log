@@ -2,14 +2,10 @@
 	<div>
 		<section class="section">
 			Select a vehicle to work with:
-			<b-select v-model="vehicleId" placeholder="Select a vehicle">
-				<option v-for="v in vehicles" :key="v.id" :value="v.id">
-					{{ v.year }} {{ v.make }} {{ v.model }}
-				</option>
-			</b-select>
-			<b-button class="is-primary" @click="selectVehicle(vehicleId)">
-				Select
-			</b-button>
+			<BSelect v-model="vehicleId" placeholder="Select a vehicle">
+				<option v-for="v in vehicles" :key="v.id" :value="v.id">{{ v.year }} {{ v.make }} {{ v.model }}</option>
+			</BSelect>
+			<BButton class="is-primary" @click="selectVehicle(vehicleId)"> Select </BButton>
 		</section>
 	</div>
 </template>

@@ -3,8 +3,7 @@
 		<section class="section">
 			<h1 class="is-size-1 has-text-centered">Maintenence Log Tracker</h1>
 			<p class="is-size-4 has-text-centered">
-				A simple application that allows you to track various maintenence logs
-				of your vehicle.
+				A simple application that allows you to track various maintenence logs of your vehicle.
 			</p>
 		</section>
 
@@ -13,16 +12,14 @@
 				<div class="column is-6">
 					<p v-if="!$auth.loggedIn" class="is-size-4 has-text-centered">
 						You need to
-						<nuxt-link class="button is-link" to="/login">Login</nuxt-link>
+						<NuxtLink class="button is-link" to="/login">Login</NuxtLink>
 						or
-						<nuxt-link class="button is-link" to="/signup">Sign Up</nuxt-link>
+						<NuxtLink class="button is-link" to="/signup">Sign Up</NuxtLink>
 						to use the app.
 					</p>
 					<p v-else>
 						Welcome {{ $store.state.user.email }}
-						<nuxt-link class="button is-link" to="/home">
-							Home
-						</nuxt-link>
+						<NuxtLink class="button is-link" to="/home"> Home </NuxtLink>
 					</p>
 				</div>
 			</div>

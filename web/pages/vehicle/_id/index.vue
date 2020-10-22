@@ -1,8 +1,6 @@
 <template>
 	<section class="section">
-		<h1 class="is-1 title">
-			{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}
-		</h1>
+		<h1 class="is-1 title">{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</h1>
 		<h5 class="is-5 subtitle">
 			<DistanceDisplay v-bind="vehicle.odometer" />
 		</h5>
@@ -12,9 +10,7 @@
 				<h3 class="title is-3">
 					Logs
 					<small class="is-size-6">
-						<NuxtLink :to="`${vehicle.id}/logs`">
-							View all
-						</NuxtLink>
+						<NuxtLink :to="`${vehicle.id}/logs`"> View all </NuxtLink>
 					</small>
 				</h3>
 
@@ -44,9 +40,7 @@
 					<p>No logs found.</p>
 					<p>
 						Try
-						<NuxtLink :to="`${$route.params.id}/logs`">
-							adding some.
-						</NuxtLink>
+						<NuxtLink :to="`${$route.params.id}/logs`"> adding some. </NuxtLink>
 					</p>
 				</template>
 			</div>
@@ -59,10 +53,7 @@ import VehicleQuery from '@/apollo/queries/vehicle.graphql'
 
 export default {
 	validate({ params, store }) {
-		return (
-			store.state.user.vehicles &&
-			!!store.state.user.vehicles.find((v) => v.id === params.id)
-		)
+		return store.state.user.vehicles && !!store.state.user.vehicles.find((v) => v.id === params.id)
 	},
 	async asyncData({ app, params }) {
 		const apollo = app.apolloProvider.defaultClient

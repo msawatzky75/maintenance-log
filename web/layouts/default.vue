@@ -1,16 +1,10 @@
 <template>
 	<div>
-		<nav
-			class="navbar header is-primary"
-			role="navigation"
-			aria-label="main navigation"
-		>
+		<nav class="navbar header is-primary" role="navigation" aria-label="main navigation">
 			<div class="navbar-brand">
 				<a class="navbar-item" href="/">
 					<!-- <img src="~assets/buefy.png" alt="Buefy" height="28" /> -->
-					<h1 class="is-size-4 has-text-weight-bold">
-						Maintenance Manager II; Electric Boogaloo
-					</h1>
+					<h1 class="is-size-4 has-text-weight-bold">Maintenance Manager II; Electric Boogaloo</h1>
 				</a>
 
 				<div class="navbar-burger">
@@ -23,7 +17,7 @@
 
 		<section class="main-content">
 			<div class="container">
-				<nuxt />
+				<Nuxt />
 			</div>
 		</section>
 	</div>

@@ -39,6 +39,7 @@ export default Vue.extend({
 					this.$store.dispatch('user/fetchUser')
 				})
 				.catch((err) => {
+					// eslint-disable-next-line
 					console.error(err)
 				})
 		},

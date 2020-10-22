@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts">
-import * as yup from 'yup'
+import type { StringSchema } from 'yup'
 import debug from 'debug'
 import Vue from 'vue'
 
@@ -16,17 +16,15 @@ export default Vue.extend({
 		// must be included in props
 		value: {
 			type: Date,
-			default: null,
+			default: () => null,
 		},
 		type: {
 			type: Object,
-			default: null,
+			default: () => null,
 		},
 		schema: {
-			type: Object,
-			default() {
-				return yup.mixed().nullable().label(this.$attrs.label).required()
-			},
+			type: Object as () => StringSchema,
+			required: true,
 		},
 	},
 	data: () => ({

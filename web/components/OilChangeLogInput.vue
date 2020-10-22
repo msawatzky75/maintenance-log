@@ -81,9 +81,7 @@ export default {
 				}
 			})
 
-			return await Promise.all(promises).then(() =>
-				callback instanceof Function ? callback : () => {}
-			)
+			return await Promise.all(promises).then(() => (callback instanceof Function ? callback : () => {}))
 		},
 	},
 }

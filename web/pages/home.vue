@@ -15,24 +15,16 @@
 					<p>{{ user.email }}</p>
 					<p>{{ user.vehicles.length }}</p>
 					<p>
-						{{
-							user.preference.distance
-								? user.preference.distance
-								: 'None selected'
-						}}
-						<nuxt-link to="/preference">change</nuxt-link>
+						{{ user.preference.distance ? user.preference.distance : 'None selected' }}
+						<NuxtLink to="/preference">change</NuxtLink>
 					</p>
 					<p>
-						{{
-							user.preference.fluid ? user.preference.fluid : 'None selected'
-						}}
-						<nuxt-link to="/preference">change</nuxt-link>
+						{{ user.preference.fluid ? user.preference.fluid : 'None selected' }}
+						<NuxtLink to="/preference">change</NuxtLink>
 					</p>
 					<p>
-						{{
-							user.preference.money ? user.preference.money : 'None selected'
-						}}
-						<nuxt-link to="/preference">change</nuxt-link>
+						{{ user.preference.money ? user.preference.money : 'None selected' }}
+						<NuxtLink to="/preference">change</NuxtLink>
 					</p>
 				</div>
 			</div>
@@ -41,28 +33,28 @@
 		<section class="section">
 			<h4 class="title is-4">Vehicles</h4>
 			<h6 class="subtitle is-6">
-				<nuxt-link to="/vehicle/create">Add new Vehicle</nuxt-link>
+				<NuxtLink to="/vehicle/create">Add new Vehicle</NuxtLink>
 			</h6>
 
-			<b-table :data="user.vehicles" hoverable @click="vehicleClick">
-				<template slot-scope="props">
-					<b-table-column field="year" label="Year" width="40" numeric sortable>
+			<BTable :data="user.vehicles" hoverable @click="vehicleClick">
+				<template #default="props">
+					<BTableColumn field="year" label="Year" width="40" numeric sortable>
 						{{ props.row.year }}
-					</b-table-column>
+					</BTableColumn>
 
-					<b-table-column field="make" label="Make" sortable>
+					<BTableColumn field="make" label="Make" sortable>
 						{{ props.row.make }}
-					</b-table-column>
+					</BTableColumn>
 
-					<b-table-column field="model" label="Model" sortable>
+					<BTableColumn field="model" label="Model" sortable>
 						{{ props.row.model }}
-					</b-table-column>
+					</BTableColumn>
 
-					<b-table-column field="odometer.value" label="Odometer" sortable>
-						<distance-display v-bind="props.row.odometer" />
-					</b-table-column>
+					<BTableColumn field="odometer.value" label="Odometer" sortable>
+						<DistanceDisplay v-bind="props.row.odometer" />
+					</BTableColumn>
 				</template>
-			</b-table>
+			</BTable>
 		</section>
 	</div>
 </template>

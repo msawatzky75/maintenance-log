@@ -1,27 +1,13 @@
 <template>
 	<section class="section">
-		<h1 class="title">
-			Add New Vehicle
-		</h1>
+		<h1 class="title">Add New Vehicle</h1>
 
 		<pre v-if="errors">{{ errors }}</pre>
 
 		<form @submit.prevent="createVehicle">
 			<BField grouped>
-				<BInputWithValidation
-					v-model="vehicle.make"
-					type="text"
-					placeholder="Make"
-					label="Make"
-					rules="required"
-				/>
-				<BInputWithValidation
-					v-model="vehicle.model"
-					type="text"
-					placeholder="Model"
-					label="Model"
-					rules="required"
-				/>
+				<BInputWithValidation v-model="vehicle.make" type="text" placeholder="Make" label="Make" rules="required" />
+				<BInputWithValidation v-model="vehicle.model" type="text" placeholder="Model" label="Model" rules="required" />
 				<BInputWithValidation
 					v-model="vehicle.year"
 					type="text"
@@ -34,9 +20,7 @@
 			<DistanceInput v-model="vehicle.odometer" label="Odometer" />
 
 			<BField>
-				<BButton type="is-primary" native-type="submit">
-					Create
-				</BButton>
+				<BButton type="is-primary" native-type="submit"> Create </BButton>
 			</BField>
 		</form>
 	</section>
@@ -63,13 +47,7 @@ export default {
 	methods: {
 		validVehicle(v) {
 			d.extend('validateVehicle')('validate: ', v)
-			return (
-				v.make.length &&
-				v.model.length &&
-				v.year &&
-				v.odometer.value &&
-				v.odometer.type
-			)
+			return v.make.length && v.model.length && v.year && v.odometer.value && v.odometer.type
 		},
 		async createVehicle() {
 			try {
@@ -85,11 +63,7 @@ export default {
 				d('redirect')
 				this.$router.push(`/vehicle/${response.data.createVehicle.id}`)
 			} catch (e) {
-				this.errors = [
-					'let me know if you ever see this message',
-					'also please share the error:',
-					e.graphqlErrors,
-				]
+				this.errors = ['let me know if you ever see this message', 'also please share the error:', e.graphqlErrors]
 				d('%o', e)
 			}
 		},

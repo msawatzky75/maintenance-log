@@ -94,7 +94,6 @@ export default {
 					})
 					this.$router.push({ name: 'vehicle-id-logs' })
 				} catch (e) {
-					console.dir(e)
 					d('Submition Error', Object.keys(e), e.graphqlErrors, e.message)
 					this.error = e.networkError.result.errors
 				}
