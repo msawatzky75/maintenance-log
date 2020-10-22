@@ -1,42 +1,42 @@
 <template>
-	<BField
-		v-bind="$attrs"
-		:type="{ 'is-danger': errors[0] }"
-		:message="errors.length ? errors[0] : null"
-	>
-		<BInput v-model="innerValue" v-bind="$attrs" />
+	<BField v-bind="$attrs" :type="{ 'is-danger': errors[0] }" :message="errors.length ? errors[0] : null">
+		<BInput v-model="innerValue" v-bind="$attrs" :type="inputType" />
 	</BField>
 </template>
 
 <script lang="ts">
-import * as yup from 'yup'
+import type { StringSchema } from 'yup'
+import Vue from 'vue'
 import debug from 'debug'
 
 const d = debug('ml.components.InputWithValidation')
-export default {
+export default Vue.extend({
 	name: 'InputWithValidation',
 	props: {
 		// must be included in props
 		value: {
-			type: null,
-			default: null,
+			type: [String, Number],
+			default: () => null as string | number | null,
 		},
 		type: {
 			type: String,
-			default: null,
+			default: () => null,
+		},
+		inputType: {
+			type: String,
+			default: () => 'text',
 		},
 		schema: {
-			type: Object,
-			default() {
-				return yup.string().nullable().label(this.$attrs.label).required()
-			},
+			type: Object as () => StringSchema,
+			required: true,
 		},
 	},
-	emits: ['input'],
-	data: () => ({
-		innerValue: null,
-		errors: [],
-	}),
+	data() {
+		return {
+			innerValue: null as string | number | null,
+			errors: [],
+		}
+	},
 	watch: {
 		// Handles internal model changes.
 		innerValue(newVal) {
@@ -67,5 +67,5 @@ export default {
 			this.errors = []
 		},
 	},
-}
+})
 </script>

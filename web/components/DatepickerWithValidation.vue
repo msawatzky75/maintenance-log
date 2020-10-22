@@ -1,9 +1,5 @@
 <template>
-	<BField
-		v-bind="$attrs"
-		:type="{ 'is-danger': errors[0] }"
-		:message="errors.length ? errors[0] : null"
-	>
+	<BField v-bind="$attrs" :type="{ 'is-danger': errors[0] }" :message="errors.length ? errors[0] : null">
 		<BDatepicker v-model="innerValue" v-bind="$attrs" />
 	</BField>
 </template>
@@ -34,8 +30,8 @@ export default Vue.extend({
 		},
 	},
 	data: () => ({
-		innerValue: null,
-		errors: [],
+		innerValue: null as string | null,
+		errors: [] as string[],
 	}),
 	watch: {
 		// Handles internal model changes.

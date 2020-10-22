@@ -1,15 +1,9 @@
 <template>
 	<section class="section">
-		<h1 class="title">
-			Create A New Log
-		</h1>
+		<h1 class="title">Create A New Log</h1>
 		<section>
 			<BField label="Log Type">
-				<BSelect
-					v-model="selectedLogType"
-					required
-					placeholder="Select a log type"
-				>
+				<BSelect v-model="selectedLogType" required placeholder="Select a log type">
 					<option v-for="t in LogTypes" :key="t.type" :value="t">
 						{{ t.name }}
 					</option>
@@ -33,14 +27,9 @@
 
 				<br />
 
-				<BButton type="is-primary" native-type="submit">
-					Create
-				</BButton>
-				<BButton type="is-secondary" native-type="reset">
-					Cancel
-				</BButton>
+				<BButton type="is-primary" native-type="submit">Create</BButton>
+				<BButton type="is-secondary" native-type="reset">Cancel</BButton>
 				<pre v-if="error">{{ error }}</pre>
-				<pre v-if="log">{{ log }}</pre>
 			</section>
 		</form>
 	</section>
@@ -76,15 +65,19 @@ export default {
 	data() {
 		return {
 			LogTypes,
-			selectedLogType: LogTypes.FuelLog,
+			selectedLogType: this.$route.query.type ? LogTypes[this.$route.query.type] : null,
 			log: null,
 			error: null,
 		}
 	},
 	watch: {
 		// Clear unshared data when log type is changed.
-		selectedLogType() {
+		selectedLogType(newType) {
 			if (this.log) this.log = { date: this.log.date, notes: this.log.notes }
+			this.$router.replace({
+				name: 'vehicle-id-logs-new',
+				query: { type: newType.type },
+			})
 		},
 	},
 	methods: {
@@ -101,12 +94,12 @@ export default {
 					})
 					this.$router.push({ name: 'vehicle-id-logs' })
 				} catch (e) {
-					d('Submition Error', e)
-					this.error = e
+					console.dir(e)
+					d('Submition Error', Object.keys(e), e.graphqlErrors, e.message)
+					this.error = e.networkError.result.errors
 				}
 			} catch (e) {
 				d('Validation Error', e)
-				this.error = e
 			}
 		},
 	},

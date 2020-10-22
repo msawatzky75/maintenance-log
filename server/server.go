@@ -72,13 +72,17 @@ func main() {
 		RefreshTokenLife:   time.Hour * 24 * 7,
 		CookieDomain:       os.Getenv("HOST_DOMAIN"),
 	}
+	signupEndpoint := endpoints.Signup{
+		DB: db,
+	}
 
 	http.Handle("/graphiql", playground.Handler("GraphQL playground", "/graphql"))
-	http.Handle("/graphql", corsMiddleware.Handler(jwtMiddleware.Handler(srv)))
-	http.Handle("/api/user", corsMiddleware.Handler(loginEndpoint.LoginHandler()))
-	http.Handle("/api/auth/login", corsMiddleware.Handler(loginEndpoint.LoginHandler()))
-	http.Handle("/api/auth/logout", corsMiddleware.Handler(loginEndpoint.LogoutHandler()))
-	http.Handle("/api/auth/refresh", corsMiddleware.Handler(loginEndpoint.RefreshHandler()))
+	http.Handle("/graphql", corsMiddleware.Handler(jwtMiddleware.Handler(srv), "POST"))
+	http.Handle("/api/user", corsMiddleware.Handler(loginEndpoint.LoginHandler(), "GET, POST"))
+	http.Handle("/api/signup", corsMiddleware.Handler(signupEndpoint.SignupHandler(), "PUT"))
+	http.Handle("/api/auth/login", corsMiddleware.Handler(loginEndpoint.LoginHandler(), "POST"))
+	http.Handle("/api/auth/logout", corsMiddleware.Handler(loginEndpoint.LogoutHandler(), "POST"))
+	http.Handle("/api/auth/refresh", corsMiddleware.Handler(loginEndpoint.RefreshHandler(), "POST"))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))

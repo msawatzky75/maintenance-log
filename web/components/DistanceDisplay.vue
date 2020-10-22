@@ -1,14 +1,12 @@
 <template>
-	<p>
-		{{ formatNumber(value) }} {{ type
-		}}{{ value > 1 || value === 0 ? 's' : '' }}
-	</p>
+	<p>{{ formatNumber(value) }} {{ type }}{{ value > 1 || value === 0 ? 's' : '' }}</p>
 </template>
 
-<script>
+<script lang="ts">
 import numeral from 'numeral'
+import Vue from 'vue'
 
-export default {
+export default Vue.extend({
 	name: 'DistanceDisplay',
 	props: {
 		value: {
@@ -21,9 +19,9 @@ export default {
 		},
 	},
 	methods: {
-		formatNumber(n) {
+		formatNumber(n: string) {
 			return numeral(n).format('0,0')
 		},
 	},
-}
+})
 </script>

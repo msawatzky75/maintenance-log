@@ -96,7 +96,6 @@ type ComplexityRoot struct {
 		CreateFuelLog        func(childComplexity int, data model.FuelLogInput) int
 		CreateMaintenanceLog func(childComplexity int, data model.MaintenanceLogInput) int
 		CreateOilChangeLog   func(childComplexity int, data model.OilChangeLogInput) int
-		CreateUser           func(childComplexity int, data model.UserInput) int
 		CreateVehicle        func(childComplexity int, data model.VehicleInput) int
 		UpdatePreference     func(childComplexity int, data model.UserPreferenceInput) int
 	}
@@ -160,7 +159,6 @@ type MaintenanceLogResolver interface {
 	Vehicle(ctx context.Context, obj *model.MaintenanceLog) (*model.Vehicle, error)
 }
 type MutationResolver interface {
-	CreateUser(ctx context.Context, data model.UserInput) (*model.User, error)
 	CreateVehicle(ctx context.Context, data model.VehicleInput) (*model.Vehicle, error)
 	CreateFuelLog(ctx context.Context, data model.FuelLogInput) (*model.FuelLog, error)
 	CreateMaintenanceLog(ctx context.Context, data model.MaintenanceLogInput) (*model.MaintenanceLog, error)
@@ -426,18 +424,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateOilChangeLog(childComplexity, args["data"].(model.OilChangeLogInput)), true
-
-	case "Mutation.createUser":
-		if e.complexity.Mutation.CreateUser == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_createUser_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.CreateUser(childComplexity, args["data"].(model.UserInput)), true
 
 	case "Mutation.createVehicle":
 		if e.complexity.Mutation.CreateVehicle == nil {
@@ -912,7 +898,6 @@ type Query {
 }
 
 type Mutation {
-  createUser(data: UserInput!): User!
   createVehicle(data: VehicleInput!): Vehicle!
 
   createFuelLog(data: FuelLogInput!): FuelLog!
@@ -1011,20 +996,6 @@ func (ec *executionContext) field_Mutation_createOilChangeLog_args(ctx context.C
 	var arg0 model.OilChangeLogInput
 	if tmp, ok := rawArgs["data"]; ok {
 		arg0, err = ec.unmarshalNOilChangeLogInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐOilChangeLogInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["data"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 model.UserInput
-	if tmp, ok := rawArgs["data"]; ok {
-		arg0, err = ec.unmarshalNUserInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐUserInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2010,47 +1981,6 @@ func (ec *executionContext) _MoneyValue_type(ctx context.Context, field graphql.
 	res := resTmp.(*model.MoneyUnit)
 	fc.Result = res
 	return ec.marshalOMoneyUnit2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐMoneyUnit(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Mutation",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_createUser_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateUser(rctx, args["data"].(model.UserInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.User)
-	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createVehicle(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -5088,11 +5018,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "createUser":
-			out.Values[i] = ec._Mutation_createUser(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "createVehicle":
 			out.Values[i] = ec._Mutation_createVehicle(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -5977,10 +5902,6 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋmsawatzky75ᚋmainten
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNUserInput2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐUserInput(ctx context.Context, v interface{}) (model.UserInput, error) {
-	return ec.unmarshalInputUserInput(ctx, v)
 }
 
 func (ec *executionContext) marshalNUserPreference2githubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐUserPreference(ctx context.Context, sel ast.SelectionSet, v model.UserPreference) graphql.Marshaler {

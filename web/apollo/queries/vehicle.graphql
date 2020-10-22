@@ -4,39 +4,21 @@ query ($id: String!, $logFilter: LogsFilter!) {
     make
     model
     year
-    odometer {
-      value
-      type
-    }
+    odometer { value type }
     logs(filter: $logFilter) {
       id
       date
-      vehicle {
-        id
-      }
-      odometer {
-        value type
-      }
+      vehicle { id }
+      odometer { value type }
       notes
       __typename
 
       ... on FuelLog {
-        trip {
-          value
-          type
-        }
         grade
-        fuelAmount {
-          value
-          type
-        }
-        fuelPrice {
-          value
-          type
-        }
+        trip { value type }
+        fuelAmount { value type }
+        fuelPrice { value type }
       }
     }
   }
 }
-
-

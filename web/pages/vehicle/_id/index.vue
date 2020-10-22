@@ -4,7 +4,7 @@
 			{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}
 		</h1>
 		<h5 class="is-5 subtitle">
-			<distance-display v-bind="vehicle.odometer" />
+			<DistanceDisplay v-bind="vehicle.odometer" />
 		</h5>
 
 		<div class="columns">
@@ -12,38 +12,41 @@
 				<h3 class="title is-3">
 					Logs
 					<small class="is-size-6">
-						<nuxt-link :to="`${vehicle.id}/logs`">
+						<NuxtLink :to="`${vehicle.id}/logs`">
 							View all
-						</nuxt-link>
+						</NuxtLink>
 					</small>
 				</h3>
 
 				<template v-if="vehicle && vehicle.logs">
-					<b-table :data="vehicle.logs" :mobile-cards="false">
+					<BTable :data="vehicle.logs" :mobile-cards="false">
 						<template #default="props">
-							<b-table-column field="date" label="Date" sortable>
+							<BTableColumn field="date" label="Date" sortable>
 								{{ props.row.date }}
-							</b-table-column>
+							</BTableColumn>
 
-							<b-table-column field="__typename" label="Type" sortable>
-								<template v-if="props.row.__typename == 'FuelLog'">
-									{{ props.row.__typename }}
-								</template>
-							</b-table-column>
+							<BTableColumn field="__typename" label="Type" sortable>
+								{{ props.row.__typename }}
+							</BTableColumn>
 
-							<b-table-column field="notes" label="Notes">
+							<BTableColumn field="odometer.value" label="Odometer" sortable>
+								<DistanceDisplay v-bind="props.row.odometer" />
+							</BTableColumn>
+
+							<BTableColumn field="notes" label="Notes" sortable>
 								{{ props.row.notes }}
-							</b-table-column>
+							</BTableColumn>
 						</template>
-					</b-table>
+					</BTable>
 				</template>
+
 				<template v-else>
 					<p>No logs found.</p>
 					<p>
 						Try
-						<nuxt-link :to="`${$route.params.id}/logs`">
+						<NuxtLink :to="`${$route.params.id}/logs`">
 							adding some.
-						</nuxt-link>
+						</NuxtLink>
 					</p>
 				</template>
 			</div>

@@ -41,14 +41,7 @@
 					v-model.number="innerValue.grade"
 					label="Fuel Grade"
 					type="number"
-					:schema="
-						yup
-							.number()
-							.typeError('Fuel Grade must be a number')
-							.nullable()
-							.label('Fuel Grade')
-							.required()
-					"
+					:schema="yup.number().typeError('Fuel Grade must be a number').nullable().label('Fuel Grade').required()"
 				/>
 			</div>
 
@@ -75,27 +68,49 @@
 			</div>
 		</div>
 
-		<BField label="Notes">
-			<BInput v-model="innerValue.notes" type="textarea" />
-		</BField>
+		<InputWithValidation
+			ref="notes"
+			v-model.trim="innerValue.notes"
+			label="Notes"
+			input-type="textarea"
+			:schema="yup.string().nullable().label('Notes').required()"
+		/>
 	</section>
 </template>
 
 <script lang="ts">
 import * as yup from 'yup'
+import Vue from 'vue'
 import debug from 'debug'
 
 const d = debug('ml.components.FuelLogInput')
 
-export default {
+interface FuelLogInput {
+	date: null | string
+	notes: null | string
+	trip: null | string
+	odometer: null | string
+	grade: null | string
+	fuelAmount: null | string
+	fuelPrice: null | string
+}
+
+export default Vue.extend({
 	name: 'FuelLogInput',
 	props: {
 		value: {
-			type: Object,
-			default: null,
+			type: Object as () => FuelLogInput,
+			default: () => ({
+				date: null,
+				notes: null,
+				trip: null,
+				odometer: null,
+				grade: null,
+				fuelAmount: null,
+				fuelPrice: null,
+			}),
 		},
 	},
-	emits: ['validate', 'input'],
 	data() {
 		return {
 			yup,
@@ -107,37 +122,35 @@ export default {
 				grade: null,
 				fuelAmount: null,
 				fuelPrice: null,
-			},
+			} as FuelLogInput,
 		}
 	},
 	watch: {
 		innerValue: {
-			handler(newVal) {
+			handler(newVal: FuelLogInput) {
 				this.$emit('input', newVal)
 			},
 			deep: true,
 		},
-		value(newVal) {
+		value(newVal: FuelLogInput) {
 			this.innerValue = newVal
 		},
 	},
 	created() {
 		if (this.value) {
-			this.innerValue = this.value || {}
+			this.innerValue = this.value
 		}
 	},
 	methods: {
-		async validate(callback) {
+		async validate(callback?: Function) {
 			const promises = Object.keys(this.$refs).map(async (r) => {
-				if (this.$refs[r].validate instanceof Function) {
-					await this.$refs[r].validate()
+				if ((this.$refs[r] as any).validate instanceof Function) {
+					await (this.$refs[r] as any).validate()
 				}
 			})
 
-			return await Promise.all(promises).then(() =>
-				callback instanceof Function ? callback : () => {}
-			)
+			return await Promise.all(promises).then(() => (callback instanceof Function ? callback : () => {}))
 		},
 	},
-}
+})
 </script>

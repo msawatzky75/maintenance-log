@@ -3,21 +3,14 @@
 		<div class="container">
 			<h1 class="is-size-1 has-text-centered">Login</h1>
 			<form @submit.prevent="userLogin">
-				<b-field label="Email">
-					<b-input v-model="login.email" type="text" placeholder="Email" />
-				</b-field>
-				<b-field label="Password">
-					<b-input
-						v-model="login.password"
-						type="password"
-						placeholder="Password"
-						password-reveal
-					/>
-				</b-field>
+				<BField label="Email">
+					<BInput v-model="login.email" type="text" placeholder="Email" />
+				</BField>
+				<BField label="Password">
+					<BInput v-model="login.password" type="password" placeholder="Password" password-reveal />
+				</BField>
 				<div>
-					<b-button type="is-primary" native-type="submit">
-						Login
-					</b-button>
+					<BButton type="is-primary" native-type="submit"> Login </BButton>
 				</div>
 			</form>
 		</div>

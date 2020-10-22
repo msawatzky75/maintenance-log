@@ -13,7 +13,7 @@
 	"dependencies": {
 		"@nuxt/typescript-runtime": "^1.0.0",
 		"@nuxtjs/apollo": "^4.0.1-rc.3",
-		"@nuxtjs/auth-next": "^5.0.0-1595976864.509d9d6",
+		"@nuxtjs/auth-next": "^5.0.0-1602966760.822bc05",
 		"@nuxtjs/axios": "^5.12.1",
 		"@nuxtjs/pwa": "^3.0.0-beta.20",
 		"bulma": "^0.9.0",
@@ -38,10 +38,12 @@
 		"eslint-config-prettier": "^6.11.0",
 		"eslint-plugin-nuxt": "^1.0.0",
 		"eslint-plugin-prettier": "^3.1.4",
-		"eslint-plugin-vue": "^7.0.0-beta.3",
+		"eslint-plugin-vue": "^7.1.0",
 		"file-loader": "^6.0.0",
 		"node-sass": "^4.14.1",
 		"prettier": "^2.0.5",
-		"sass-loader": "^9.0.3"
+		"sass-loader": "^9.0.3",
+		"ts-loader": "^8.0.6",
+		"vue-template-compiler": "^2.6.12"
 	}
 }

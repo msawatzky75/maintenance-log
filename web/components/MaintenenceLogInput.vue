@@ -25,15 +25,21 @@
 			</div>
 		</div>
 
-		<BField label="Notes">
-			<BInput v-model="innerValue.notes" type="textarea" />
-		</BField>
+		<InputWithValidation
+			ref="notes"
+			v-model.trim="innerValue.notes"
+			label="Notes"
+			input-type="textarea"
+			:schema="yup.string().nullable().label('Notes').required()"
+		/>
 	</section>
 </template>
 
 <script>
+import * as yup from 'yup'
+
 export default {
-	name: 'OilChangeLogInput',
+	name: 'MaintenenceLogInput',
 	components: {},
 	props: {
 		value: {
@@ -43,6 +49,7 @@ export default {
 	},
 	data() {
 		return {
+			yup,
 			innerValue: {
 				date: null,
 				odometer: null,
@@ -74,9 +81,7 @@ export default {
 				}
 			})
 
-			return await Promise.all(promises).then(() =>
-				callback instanceof Function ? callback : () => {}
-			)
+			return await Promise.all(promises).then(() => (callback instanceof Function ? callback : () => {}))
 		},
 	},
 }

@@ -5,19 +5,31 @@
 		</h3>
 
 		<section>
-			<BButton tag="nuxt-link" to="logs/new">
+			<BButton
+				tag="nuxt-link"
+				:to="{ name: 'vehicle-id-logs-new', query: { type: 'MaintenenceLog' } }"
+			>
 				Create New Log
 			</BButton>
 
-			<BButton tag="nuxt-link" to="logs/new/fuel">
+			<BButton
+				tag="nuxt-link"
+				:to="{ name: 'vehicle-id-logs-new', query: { type: 'FuelLog' } }"
+			>
 				Create New Fuel Log
 			</BButton>
 
-			<BButton tag="nuxt-link" to="logs/new/maintenence">
+			<BButton
+				tag="nuxt-link"
+				:to="{ name: 'vehicle-id-logs-new', query: { type: 'MaintenenceLog' } }"
+			>
 				Create New Maintenence Log
 			</BButton>
 
-			<BButton tag="nuxt-link" to="logs/new/oil">
+			<BButton
+				tag="nuxt-link"
+				:to="{ name: 'vehicle-id-logs-new', query: { type: 'OilChangeLog' } }"
+			>
 				Create New Oil Change Log
 			</BButton>
 		</section>
@@ -63,8 +75,8 @@
 </template>
 
 <script>
-import VehicleQuery from '@/apollo/queries/vehicle.graphql'
 import debug from 'debug'
+import VehicleQuery from '@/apollo/queries/vehicle.graphql'
 
 const d = debug('ml.pages.vehicle._id.logs.index')
 export default {

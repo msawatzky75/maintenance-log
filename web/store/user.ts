@@ -1,6 +1,6 @@
-import UserQuery from '@/apollo/queries/user.graphql'
 import debug from 'debug'
 import type { ActionTree, GetterTree, MutationTree } from 'vuex'
+import UserQuery from '~/apollo/queries/user.graphql'
 // https://typescript.nuxtjs.org/cookbook/store.html#vanilla
 
 const d = debug('ml.store.user')
@@ -40,7 +40,7 @@ interface User {
 	preference: UserPreference
 }
 
-export function state() {
+function state() {
 	return {
 		id: null as string | null,
 		email: null as string | null,
@@ -50,41 +50,44 @@ export function state() {
 	}
 }
 
+export default {
+	state,
+	mutations: {
+		setDefaultVehicle(state, vid: string) {
+			if (state.vehicles?.find((v) => v.id === vid)) {
+				state.selectedVehicle = vid
+			}
+		},
+		setUser(state, { id, email, vehicles, preference }: User) {
+			state.id = id
+			state.email = email
+			state.vehicles = vehicles
+			state.preference = preference
+			if (!state.selectedVehicle) state.selectedVehicle = preference.vehicle
+		},
+	} as MutationTree<RootState>,
+
+	getters: {
+		selectedVehicle: (state) => {
+			return state.vehicles?.find((v) => v.id === state.selectedVehicle)
+		},
+		hasVehicleSelected: (_, getters) => {
+			return getters.selectedVehicle != null
+		},
+	} as GetterTree<RootState, RootState>,
+
+	actions: {
+		async fetchUser({ commit }) {
+			const client = this.app.apolloProvider.defaultClient
+			let response = null
+			try {
+				response = await client.query({ query: UserQuery, variables: {} })
+				commit('setUser', response.data.getUser as User)
+			} catch (e) {
+				d('there it goes, erroring again')
+			}
+		},
+	} as ActionTree<RootState, RootState>,
+}
+
 export type RootState = ReturnType<typeof state>
-
-export const mutations: MutationTree<RootState> = {
-	setDefaultVehicle(state, vid: string) {
-		if (state.vehicles?.find((v) => v.id === vid)) {
-			state.selectedVehicle = vid
-		}
-	},
-	setUser(state, { id, email, vehicles, preference }: User) {
-		state.id = id
-		state.email = email
-		state.vehicles = vehicles
-		state.preference = preference
-		if (!state.selectedVehicle) state.selectedVehicle = preference.vehicle
-	},
-}
-
-export const getters: GetterTree<RootState, RootState> = {
-	selectedVehicle: (state) => {
-		return state.vehicles?.find((v) => v.id === state.selectedVehicle)
-	},
-	hasVehicleSelected: (_, getters) => {
-		return getters.selectedVehicle != null
-	},
-}
-
-export const actions: ActionTree<RootState, RootState> = {
-	async fetchUser({ commit }) {
-		const client = this.app.apolloProvider.defaultClient
-		let response = null
-		try {
-			response = await client.query({ query: UserQuery, variables: {} })
-			commit('setUser', response.data.getUser as User)
-		} catch (e) {
-			d('there it goes, erroring again')
-		}
-	},
-}

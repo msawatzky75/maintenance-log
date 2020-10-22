@@ -90,21 +90,26 @@ func (l *Login) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessTokenCookie, err := l.createAccessTokenCookie(u.ID.String())
+	l.SetLoginCookies(u.ID.String(), w)
+
+	json.NewEncoder(w).Encode(map[string]string{"userId": u.ID.String()})
+}
+
+// SetLoginCookies sets cookies for a userID
+func (l *Login) SetLoginCookies(userID string, w http.ResponseWriter) {
+	accessTokenCookie, err := l.createAccessTokenCookie(userID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	http.SetCookie(w, accessTokenCookie)
 
-	refreshTokenCookie, err := l.createRefreshTokenCookie(u.ID.String())
+	refreshTokenCookie, err := l.createRefreshTokenCookie(userID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	http.SetCookie(w, refreshTokenCookie)
-
-	json.NewEncoder(w).Encode(map[string]string{"userId": u.ID.String()})
 }
 
 func (l *Login) createAccessTokenCookie(userID string) (*http.Cookie, error) {

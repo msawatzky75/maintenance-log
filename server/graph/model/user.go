@@ -19,6 +19,18 @@ type User struct {
 	PreferenceID *uuid.UUID `json:"preference"`
 }
 
+// Error allows for singleton errors
+type Error string
+
+func (err Error) Error() string {
+	return string(err)
+}
+
+const ErrInvalidEmail = Error("invalid email")
+const ErrInvalidPassword = Error("invalid password")
+const ErrEmailExists = Error("email already exists")
+const ErrUnableToHashPassword = Error("unable to hash password")
+
 type UserPreference struct {
 	Base
 	Distance  *DistanceUnit `json:"distance"`
@@ -43,23 +55,23 @@ func validEmail(e string) bool {
 
 func validPassword(p string) bool {
 	// TODO
-	return len(p) >= 12
+	return len(p) >= 8
 }
 
 func CreateUser(db *gorm.DB, email string, password string) (User, error) {
 	var u User
 
 	if !validEmail(email) {
-		return u, fmt.Errorf("invalid email")
+		return u, ErrInvalidEmail
 	}
 	if !validPassword(password) {
-		return u, fmt.Errorf("invalid password")
+		return u, ErrInvalidPassword
 	}
 
 	var c int
 	db.Model(User{}).Where("email = ?", email).Count(&c)
 	if c != 0 {
-		return u, fmt.Errorf("email already exists")
+		return u, ErrEmailExists
 	}
 
 	cost, err := strconv.Atoi(os.Getenv("PASSWORD_HASH_COST"))
@@ -71,7 +83,7 @@ func CreateUser(db *gorm.DB, email string, password string) (User, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), cost)
 	if err != nil {
 		log.Error(err)
-		return u, fmt.Errorf("unable hash password")
+		return u, ErrUnableToHashPassword
 	}
 
 	tx := db.Begin()
@@ -88,7 +100,7 @@ func CreateUser(db *gorm.DB, email string, password string) (User, error) {
 		Money:     nil,
 		VehicleID: nil,
 	}
-	err = tx.Debug().Save(&p).Error
+	err = tx.Save(&p).Error
 	if err != nil {
 		log.Error(err)
 		return u, err

@@ -1,21 +1,13 @@
 <template>
 	<BField :label="label" :type="type" :message="message">
 		<BField :type="type">
-			<BSelect
-				v-model="innerValue.type"
-				type="text"
-				:placeholder="typePlaceholder"
-			>
+			<BSelect v-model="innerValue.type" type="text" :placeholder="typePlaceholder">
 				<option v-for="(t, k) in types" :key="k" :value="t.value">
 					{{ t.name }}
 				</option>
 			</BSelect>
 
-			<BInput
-				v-model.number="innerValue.value"
-				type="number"
-				:placeholder="amountPlaceholder"
-			/>
+			<BInput v-model.number="innerValue.amount" type="number" :placeholder="amountPlaceholder" />
 		</BField>
 	</BField>
 </template>
@@ -27,19 +19,24 @@ import Vue from 'vue'
 
 const d = debug('ml.components.TypeAmountInput')
 
+interface TypeAmount {
+	type: string | null
+	amount: number | null
+}
+
 export default Vue.extend({
 	name: 'TypeAmountInput',
 	props: {
 		// options in Type dropdown
-		types: { type: Array, required: true },
+		types: { type: Array as () => Array<string>, required: true },
 
 		// selected value and type
-		value: { type: Object, default: null },
-		label: { type: String, default: null },
-		amountPlaceholder: { type: String, default: null },
-		typePlaceholder: { type: String, default: null },
+		value: { type: Object as () => TypeAmount, default: () => ({ type: null, amount: null }) },
+		label: { type: String, required: false, default: () => null },
+		amountPlaceholder: { type: String, default: () => null },
+		typePlaceholder: { type: String, default: () => null },
 		schema: {
-			type: Object,
+			type: Object as () => yup.ObjectSchema<TypeAmount>,
 			default: () =>
 				yup.object().shape({
 					type: yup.string().nullable().label('Type').required(),
@@ -50,27 +47,24 @@ export default Vue.extend({
 	data() {
 		return {
 			innerValue: {
-				value: null,
+				amount: null,
 				type: null,
-			},
-			errors: [],
+			} as TypeAmount,
+			errors: [] as string[],
 		}
 	},
 	computed: {
-		message() {
+		message(): string | null {
 			return this.errors.length > 0 ? this.errors[0] : null
 		},
-		type() {
+		type(): object {
 			return { 'is-danger': this.errors[0] }
 		},
 	},
 	watch: {
 		innerValue: {
 			handler(newVal) {
-				this.$emit(
-					'input',
-					newVal.value === '' ? { ...newVal, value: null } : newVal
-				)
+				this.$emit('input', newVal.amount === '' ? { ...newVal, amount: null } : newVal)
 			},
 			deep: true,
 		},
@@ -83,7 +77,7 @@ export default Vue.extend({
 	},
 	created() {
 		if (this.value) {
-			this.innerValue = this.value || {}
+			this.innerValue = this.value
 		}
 		this.$emit('input', this.innerValue)
 	},
@@ -100,7 +94,7 @@ export default Vue.extend({
 
 		reset() {
 			this.innerValue = {
-				value: null,
+				amount: null,
 				type: null,
 			}
 			this.errors = []

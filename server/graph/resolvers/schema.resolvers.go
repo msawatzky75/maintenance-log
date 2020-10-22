@@ -11,36 +11,8 @@ import (
 	"github.com/msawatzky75/maintenence-log/server/graph/generated"
 	"github.com/msawatzky75/maintenence-log/server/graph/model"
 	"github.com/msawatzky75/maintenence-log/server/middleware"
-	uuid "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 )
-
-func (r *mutationResolver) CreateUser(ctx context.Context, data model.UserInput) (*model.User, error) {
-	tx := r.DB.Begin()
-	// Rollback the transaction if the routine panics
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
-	if err := tx.Error; err != nil {
-		return nil, err
-	}
-
-	p := &model.UserPreference{}
-	if err := tx.Create(p).Error; err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	u := &model.User{Email: data.Email, PreferenceID: &p.ID}
-	if err := tx.Create(u).Error; err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	return u, tx.Commit().Error
-}
 
 func (r *mutationResolver) CreateVehicle(ctx context.Context, data model.VehicleInput) (*model.Vehicle, error) {
 	uid, err := uuid.FromString((*ctx.Value(middleware.JwtContextKey).(*jwt.MapClaims))["userId"].(string))
@@ -252,3 +224,37 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *mutationResolver) CreateUser(ctx context.Context, data model.UserInput) (*model.User, error) {
+	tx := r.DB.Begin()
+	// Rollback the transaction if the routine panics
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return nil, err
+	}
+
+	p := &model.UserPreference{}
+	if err := tx.Create(p).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	u := &model.User{Email: data.Email, PreferenceID: &p.ID}
+	if err := tx.Create(u).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	return u, tx.Commit().Error
+}

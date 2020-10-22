@@ -63,7 +63,6 @@ type Query {
 }
 
 type Mutation {
-  createUser(data: UserInput!): User!
   createVehicle(data: VehicleInput!): Vehicle!
 
   createFuelLog(data: FuelLogInput!): FuelLog!

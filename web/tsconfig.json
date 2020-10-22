@@ -1,8 +1,8 @@
 {
 	"compilerOptions": {
-		"target": "ES2018",
-		"module": "ESNext",
-		"moduleResolution": "Node",
+		"target": "es5",
+		"module": "esnext",
+		"moduleResolution": "node",
 		"lib": ["ESNext", "ESNext.AsyncIterable", "DOM"],
 		"resolveJsonModule": true,
 		"esModuleInterop": true,

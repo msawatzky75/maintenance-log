@@ -15,6 +15,14 @@ module.exports = {
 	plugins: ['prettier'],
 	rules: {
 		indent: ['error', 'tab'],
+		'vue/component-name-in-template-casing': [
+			'error',
+			'PascalCase',
+			{
+				registeredComponentsOnly: false,
+				ignores: [],
+			},
+		],
 		'vue/html-indent': ['error', 'tab'],
 		'vue/html-self-closing': [
 			'warn',
@@ -24,11 +32,10 @@ module.exports = {
 				},
 			},
 		],
+		'vue/require-explicit-emits': ['off'],
+		'vue/singleline-html-element-content-newline': ['off'],
+
 		'no-unused-vars': 'off',
-		'@typescript-eslint/no-unused-vars': [
-			'warn',
-			{ varsIgnorePattern: '_|d', args: 'after-used' },
-		],
-		'sort-imports': ['error', { ignoreCase: true }],
+		'@typescript-eslint/no-unused-vars': ['warn', { varsIgnorePattern: '_|d', args: 'after-used' }],
 	},
 }

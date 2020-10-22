@@ -1,9 +1,5 @@
 export default {
-	/*
-	 ** Nuxt rendering mode
-	 ** See https://nuxtjs.org/api/configuration-mode
-	 */
-	mode: 'spa',
+	ssr: false,
 	/*
 	 ** Nuxt target
 	 ** See https://nuxtjs.org/api/configuration-target
@@ -31,7 +27,7 @@ export default {
 	/*
 	 ** Global CSS
 	 */
-	css: ['@/assets/scss/main.scss'],
+	css: ['~/assets/scss/main.scss'],
 	/*
 	 ** Plugins to load before mounting the App
 	 ** https://nuxtjs.org/guide/plugins
@@ -109,9 +105,9 @@ export default {
 
 	apollo: {
 		clientConfigs: {
-			default: '@/apollo/client-configs/default.ts',
+			default: '~/apollo/client-configs/default.ts',
 		},
-		errorHandler: '@/plugins/apollo-error-handler.ts', // why even bother? its not like it works
+		errorHandler: '~/plugins/apollo-error-handler.ts', // why even bother? its not like it works
 	},
 
 	router: {},
