@@ -9,10 +9,6 @@ import (
 	"time"
 )
 
-type Log interface {
-	IsLog()
-}
-
 type DateFilter struct {
 	StartDate time.Time `json:"startDate"`
 	EndDate   time.Time `json:"endDate"`

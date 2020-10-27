@@ -2,6 +2,7 @@ package graph
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/jinzhu/gorm"
 	"github.com/msawatzky75/maintenence-log/server/graph/model"
@@ -93,6 +94,15 @@ func GetVehicleLogs(DB *gorm.DB, ids []uuid.UUID, filter model.LogsFilter) ([]mo
 	if len(ol) > 0 {
 		for _, v := range ol {
 			logs = append(logs, v)
+		}
+	}
+
+	if filter.Recent != nil && *filter.Recent > 0 {
+		sort.Slice(logs, func(i, j int) bool {
+			return logs[i].GetDate().Before(*logs[j].GetDate())
+		})
+		if len(logs) > *filter.Recent {
+			return logs[*filter.Recent:], nil
 		}
 	}
 

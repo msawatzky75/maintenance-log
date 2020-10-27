@@ -6,6 +6,11 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+type Log interface {
+	IsLog()
+	GetDate() *time.Time
+}
+
 type FuelLog struct {
 	BaseWithTimestamps
 	Date       *time.Time     `json:"date"`
@@ -21,6 +26,9 @@ type FuelLog struct {
 // IsLog satisfies Log interface
 func (FuelLog) IsLog() {}
 
+// GetDate returns the log date
+func (l FuelLog) GetDate() *time.Time { return l.Date }
+
 type MaintenanceLog struct {
 	BaseWithTimestamps
 	Date      *time.Time     `json:"date"`
@@ -32,6 +40,9 @@ type MaintenanceLog struct {
 // IsLog satisfies Log interface
 func (MaintenanceLog) IsLog() {}
 
+// GetDate returns the log date
+func (l MaintenanceLog) GetDate() *time.Time { return l.Date }
+
 type OilChangeLog struct {
 	BaseWithTimestamps
 	Date      *time.Time     `json:"date"`
@@ -42,3 +53,6 @@ type OilChangeLog struct {
 
 // IsLog satisfies Log interface
 func (OilChangeLog) IsLog() {}
+
+// GetDate returns the log date
+func (l OilChangeLog) GetDate() *time.Time { return l.Date }
