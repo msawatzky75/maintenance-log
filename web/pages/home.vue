@@ -59,8 +59,11 @@
 	</div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue from 'vue'
+
+export default Vue.extend({
+	name: 'Home',
 	validate({ store }) {
 		return !!store.state.user.id
 	},
@@ -70,9 +73,9 @@ export default {
 		},
 	},
 	methods: {
-		vehicleClick({ id }) {
+		vehicleClick({ id }: { id: string }) {
 			this.$router.push('/vehicle/' + id)
 		},
 	},
-}
+})
 </script>

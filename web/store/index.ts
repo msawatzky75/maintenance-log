@@ -12,5 +12,10 @@ export function state() {
 			{ value: 'Litre', name: 'Litre' },
 			{ value: 'Gallon', name: 'Gallon' },
 		],
+		logTypes: {
+			FuelLog: 'Fuel Log',
+			MaintenceLog: 'Maintence Log',
+			OilChangeLog: 'Oil Change Log',
+		},
 	}
 }

@@ -1,4 +1,4 @@
-query {
+query ($logFilter: LogsFilter!){
 	getUser {
 		id
 		email
@@ -11,6 +11,14 @@ query {
 				value
 				type
 			}
+			# logCount
+				logs(filter: $logFilter) {
+					id
+					date
+					odometer { value type }
+					notes
+					__typename
+				}
 		}
 
 		preference {

@@ -2,15 +2,29 @@
 	<div>
 		<nav class="navbar header is-primary" role="navigation" aria-label="main navigation">
 			<div class="navbar-brand">
-				<a class="navbar-item" href="/">
+				<NuxtLink class="navbar-item" to="/">
 					<!-- <img src="~assets/buefy.png" alt="Buefy" height="28" /> -->
 					<h1 class="is-size-4 has-text-weight-bold">Maintenance Manager II; Electric Boogaloo</h1>
-				</a>
+				</NuxtLink>
 
 				<div class="navbar-burger">
 					<span />
 					<span />
 					<span />
+				</div>
+			</div>
+			<div class="navbar-menu">
+				<div class="navbar-end">
+					<div v-if="$auth.loggedIn" class="navbar-item has-dropdown is-hoverable">
+						<a class="navbar-link">Profile</a>
+
+						<div class="navbar-dropdown is-right">
+							<div class="navbar-item">{{ $store.state.user.email }}</div>
+							<hr class="navbar-divider" />
+							<NuxtLink class="navbar-item" :to="{ name: 'profile' }">Profile</NuxtLink>
+							<a class="navbar-item" @click="$auth.logout()">Logout</a>
+						</div>
+					</div>
 				</div>
 			</div>
 		</nav>

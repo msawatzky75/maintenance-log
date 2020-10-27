@@ -33,7 +33,7 @@ interface Vehicle {
 	odometer: DistanceValue
 }
 
-interface User {
+export interface User {
 	id: string
 	email: string
 	vehicles: Vehicle[] | null
@@ -50,14 +50,11 @@ function state() {
 	}
 }
 
+export type RootState = ReturnType<typeof state>
+
 export default {
 	state,
 	mutations: {
-		setDefaultVehicle(state, vid: string) {
-			if (state.vehicles?.find((v) => v.id === vid)) {
-				state.selectedVehicle = vid
-			}
-		},
 		setUser(state, { id, email, vehicles, preference }: User) {
 			state.id = id
 			state.email = email
@@ -78,10 +75,12 @@ export default {
 
 	actions: {
 		async fetchUser({ commit }) {
-			const client = this.app.apolloProvider.defaultClient
+			const client = this.app.apolloProvider?.defaultClient
+			if (!client) throw new Error('No apollo client.')
+
 			let response = null
 			try {
-				response = await client.query({ query: UserQuery, variables: {} })
+				response = await client.query({ query: UserQuery, variables: { logFilter: { recent: 5 } } })
 				commit('setUser', response.data.getUser as User)
 			} catch (e) {
 				d('there it goes, erroring again')
@@ -89,5 +88,3 @@ export default {
 		},
 	} as ActionTree<RootState, RootState>,
 }
-
-export type RootState = ReturnType<typeof state>

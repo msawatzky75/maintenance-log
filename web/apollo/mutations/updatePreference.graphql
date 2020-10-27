@@ -1,0 +1,6 @@
+mutation ($data: UserPreferenceInput!) {
+	updatePreference(data: $data) {
+		# i dont need anything from here
+		__typename
+	}
+}
