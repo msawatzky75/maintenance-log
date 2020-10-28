@@ -46,10 +46,7 @@
 							<BSelect v-model="preference.vehicleId" type="text">
 								<option :value="null" hidden>Select a Vehicle</option>
 								<option v-for="(v, k) in $store.state.user.vehicles" :key="k" :value="v.id">
-									{{ v.year }} {{ v.make }} {{ v.model }} (<DistanceDisplay
-										class="subtitle is-6"
-										v-bind="v.odometer"
-									/>)
+									{{ v.year }} {{ v.make }} {{ v.model }} &mdash; <DistanceDisplay v-bind="v.odometer" short />
 								</option>
 							</BSelect>
 						</BField>
@@ -74,7 +71,10 @@
 
 			<div class="columns is-multiline">
 				<div v-for="(v, k) in user.vehicles" :key="k" class="column is-flex">
-					<div class="box is-align-self-center is-full-height is-full-width">
+					<NuxtLink
+						class="box is-align-self-center is-full-height is-full-width"
+						:to="{ name: 'vehicle-id', params: { id: v.id } }"
+					>
 						<h4 class="title">{{ v.year }} {{ v.make }} {{ v.model }}</h4>
 						<DistanceDisplay class="subtitle is-6" v-bind="v.odometer" />
 
@@ -87,11 +87,11 @@
 						>
 							<template #default="props">
 								<BTableColumn field="date" label="Date" width="40" sortable>
-									{{ props.row.date }}
+									{{ new Date(props.row.date).toISOString().split('T')[0] }}
 								</BTableColumn>
 
-								<BTableColumn field="odometer.value" label="Odometer" sortable>
-									<DistanceDisplay v-bind="props.row.odometer" />
+								<BTableColumn field="odometer.value" label="Odometer" class="has-text-right" sortable>
+									<DistanceDisplay v-bind="props.row.odometer" short />
 								</BTableColumn>
 
 								<BTableColumn field="notes" label="Notes" sortable>
@@ -104,11 +104,7 @@
 							</template>
 						</BTable>
 						<div v-else>No logs yet.</div>
-
-						<NuxtLink class="is-hidden-tablet" :to="{ name: 'vehicle-id', params: { id: v.id } }">
-							View Vehicle
-						</NuxtLink>
-					</div>
+					</NuxtLink>
 				</div>
 			</div>
 		</section>

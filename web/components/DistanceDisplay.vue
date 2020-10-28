@@ -1,5 +1,8 @@
 <template>
-	<p>{{ formatNumber(value) }} {{ type }}{{ value > 1 || value === 0 ? 's' : '' }}</p>
+	<p>
+		{{ formatNumber(value) }} {{ short ? $store.state.distanceTypes.find((v) => v.value === type).short : type
+		}}{{ (value > 1 || value === 0) && !short ? 's' : '' }}
+	</p>
 </template>
 
 <script lang="ts">
@@ -17,6 +20,7 @@ export default Vue.extend({
 			type: String,
 			required: true,
 		},
+		short: Boolean,
 	},
 	methods: {
 		formatNumber(n: string) {

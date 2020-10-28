@@ -1,8 +1,8 @@
 export function state() {
 	return {
 		distanceTypes: [
-			{ value: 'Kilometre', name: 'Kilometre' },
-			{ value: 'Mile', name: 'Mile' },
+			{ value: 'Kilometre', name: 'Kilometre', short: 'km' },
+			{ value: 'Mile', name: 'Mile', short: 'mi' },
 		],
 		currencyTypes: [
 			{ value: 'CAD', name: 'CAD' },
