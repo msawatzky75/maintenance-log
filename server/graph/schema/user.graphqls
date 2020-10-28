@@ -27,7 +27,7 @@ type Vehicle {
   model: String!
   year: Int!
   user: User!
-  odometer: DistanceValue!
+  odometer(type: DistanceUnit): DistanceValue!
 
   logs(filter: LogsFilter!): [Log!]
 }

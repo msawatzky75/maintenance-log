@@ -8,7 +8,7 @@ import (
 
 	"github.com/msawatzky75/maintenence-log/server/graph/generated"
 	"github.com/msawatzky75/maintenence-log/server/graph/model"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 func (r *userResolver) ID(ctx context.Context, obj *model.User) (string, error) {
@@ -52,6 +52,13 @@ func (r *vehicleResolver) User(ctx context.Context, obj *model.Vehicle) (*model.
 	var u model.User
 	r.DB.First(&u, "id = ?", obj.UserID.String())
 	return &u, nil
+}
+
+func (r *vehicleResolver) Odometer(ctx context.Context, obj *model.Vehicle, typeArg *model.DistanceUnit) (*model.DistanceValue, error) {
+	if typeArg != nil {
+		return obj.Odometer.ConvertTo(*typeArg), nil
+	}
+	return obj.Odometer, nil
 }
 
 func (r *vehicleResolver) Logs(ctx context.Context, obj *model.Vehicle, filter model.LogsFilter) ([]model.Log, error) {

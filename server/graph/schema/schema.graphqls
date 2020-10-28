@@ -1,78 +1,78 @@
 scalar Time
 
 input UserInput {
-  email: String!
+	email: String!
 }
 
 input VehicleInput {
-  make: String!
-  model: String!
-  year: Int!
-  odometer: DistanceValueInput!
+	make: String!
+	model: String!
+	year: Int!
+	odometer: DistanceValueInput!
 }
 
 input DistanceValueInput {
-  value: Float!
-  type: DistanceUnit!
+	value: Float!
+	type: DistanceUnit!
 }
 
 input FluidValueInput {
-  value: Float!
-  type: FluidUnit!
+	value: Float!
+	type: FluidUnit!
 }
 
 input MoneyValueInput {
-  value: Float!
-  type: MoneyUnit!
+	value: Float!
+	type: MoneyUnit!
 }
 
 input FuelLogInput {
-  date: Time!
-  vehicleId: String!
-  odometer: DistanceValueInput!
-  notes: String!
+	date: Time!
+	vehicleId: String!
+	odometer: DistanceValueInput!
+	notes: String!
 
-  trip: DistanceValueInput!
-  grade: Int!
-  fuelAmount: FluidValueInput!
-  fuelPrice: MoneyValueInput!
+	trip: DistanceValueInput!
+	grade: Int!
+	fuelAmount: FluidValueInput!
+	fuelPrice: MoneyValueInput!
 }
 input MaintenanceLogInput {
-  date: Time!
-  vehicleId: String!
-  odometer: DistanceValueInput!
-  notes: String!
+	date: Time!
+	vehicleId: String!
+	odometer: DistanceValueInput!
+	notes: String!
 }
 input OilChangeLogInput {
-  date: Time!
-  vehicleId: String!
-  odometer: DistanceValueInput!
-  notes: String!
+	date: Time!
+	vehicleId: String!
+	odometer: DistanceValueInput!
+	notes: String!
 }
 
 input UserPreferenceInput {
-  distance: DistanceUnit
-  fluid: FluidUnit
-  money: MoneyUnit
-  vehicleId: String
+	distance: DistanceUnit
+	fluid: FluidUnit
+	money: MoneyUnit
+	vehicleId: String
 }
 
 type Query {
-  getUser(id: String): User!
-  getVehicle(id: String!): Vehicle!
+	getUser(id: String): User!
+	getVehicle(id: String!): Vehicle!
 }
 
 type Mutation {
-  createVehicle(data: VehicleInput!): Vehicle!
+	createVehicle(data: VehicleInput!): Vehicle!
 
-  createFuelLog(data: FuelLogInput!): FuelLog!
-  createMaintenanceLog(data: MaintenanceLogInput!): MaintenanceLog!
-  createOilChangeLog(data: OilChangeLogInput!): OilChangeLog!
+	createFuelLog(data: FuelLogInput!): FuelLog!
+	createMaintenanceLog(data: MaintenanceLogInput!): MaintenanceLog!
+	createOilChangeLog(data: OilChangeLogInput!): OilChangeLog!
 
-  updatePreference(data: UserPreferenceInput!): UserPreference!
+	updatePreference(data: UserPreferenceInput!): UserPreference!
 }
 
 schema {
-  query: Query
-  mutation: Mutation
+	query: Query
+	mutation: Mutation
 }

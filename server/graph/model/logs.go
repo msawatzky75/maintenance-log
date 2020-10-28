@@ -6,6 +6,82 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// MileToKilometerRate is the constant rate of conversion between Miles and Kilometres
+const MileToKilometerRate = 1.609344
+
+func (d *DistanceValue) ConvertTo(t DistanceUnit) *DistanceValue {
+	switch t {
+	case DistanceUnitKilometre:
+		if *d.Type != DistanceUnitKilometre {
+			var converted = *d.Value * MileToKilometerRate
+			var convertedType = DistanceUnitKilometre
+
+			d.Value = &converted
+			d.Type = &convertedType
+		}
+	case DistanceUnitMile:
+		if *d.Type != DistanceUnitMile {
+			var converted = *d.Value / MileToKilometerRate
+			var convertedType = DistanceUnitMile
+
+			d.Value = &converted
+			d.Type = &convertedType
+		}
+	}
+
+	return d
+}
+
+const GallonToLitreRate = 3.785411784
+
+func (f *FluidValue) ConvertTo(t FluidUnit) *FluidValue {
+	switch t {
+	case FluidUnitLitre:
+		if *f.Type != FluidUnitLitre {
+			var converted = *f.Value * GallonToLitreRate
+			var convertedType = FluidUnitLitre
+
+			f.Value = &converted
+			f.Type = &convertedType
+		}
+	case FluidUnitGallon:
+		if *f.Type != FluidUnitGallon {
+			var converted = *f.Value / GallonToLitreRate
+			var convertedType = FluidUnitGallon
+
+			f.Value = &converted
+			f.Type = &convertedType
+		}
+	}
+
+	return f
+}
+
+func (m *MoneyValue) ConvertTo(t MoneyUnit) *MoneyValue {
+	return m // TODO this at some point
+
+	switch t {
+	case MoneyUnitCad:
+		if *m.Type != MoneyUnitCad {
+			var converted = *m.Value * 1
+			var convertedType = MoneyUnitCad
+
+			m.Value = &converted
+			m.Type = &convertedType
+		}
+	case MoneyUnitUsd:
+		if *m.Type != MoneyUnitUsd {
+			var converted = *m.Value / 1
+			var convertedType = MoneyUnitUsd
+
+			m.Value = &converted
+			m.Type = &convertedType
+		}
+	}
+
+	return m
+}
+
 type Log interface {
 	IsLog()
 	GetDate() *time.Time

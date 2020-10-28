@@ -54,3 +54,19 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+  MaintenanceLog:
+    fields:
+      odometer:
+        resolver: true
+  FuelLog:
+    fields:
+      odometer:
+        resolver: true
+  OilChangeLog:
+    fields:
+      odometer:
+        resolver: true
+  Vehicle:
+    fields:
+      odometer:
+        resolver: true

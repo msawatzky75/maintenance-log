@@ -20,6 +20,13 @@ func (r *fuelLogResolver) Vehicle(ctx context.Context, obj *model.FuelLog) (*mod
 	return &v, nil
 }
 
+func (r *fuelLogResolver) Odometer(ctx context.Context, obj *model.FuelLog, typeArg *model.DistanceUnit) (*model.DistanceValue, error) {
+	if typeArg != nil {
+		return obj.Odometer.ConvertTo(*typeArg), nil
+	}
+	return obj.Odometer, nil
+}
+
 func (r *maintenanceLogResolver) ID(ctx context.Context, obj *model.MaintenanceLog) (string, error) {
 	return obj.ID.String(), nil
 }
@@ -30,6 +37,13 @@ func (r *maintenanceLogResolver) Vehicle(ctx context.Context, obj *model.Mainten
 	return &v, nil
 }
 
+func (r *maintenanceLogResolver) Odometer(ctx context.Context, obj *model.MaintenanceLog, typeArg *model.DistanceUnit) (*model.DistanceValue, error) {
+	if typeArg != nil {
+		return obj.Odometer.ConvertTo(*typeArg), nil
+	}
+	return obj.Odometer, nil
+}
+
 func (r *oilChangeLogResolver) ID(ctx context.Context, obj *model.OilChangeLog) (string, error) {
 	return obj.ID.String(), nil
 }
@@ -38,6 +52,13 @@ func (r *oilChangeLogResolver) Vehicle(ctx context.Context, obj *model.OilChange
 	var v model.Vehicle
 	r.DB.First(&v, "id = ?", obj.VehicleID)
 	return &v, nil
+}
+
+func (r *oilChangeLogResolver) Odometer(ctx context.Context, obj *model.OilChangeLog, typeArg *model.DistanceUnit) (*model.DistanceValue, error) {
+	if typeArg != nil {
+		return obj.Odometer.ConvertTo(*typeArg), nil
+	}
+	return obj.Odometer, nil
 }
 
 // FuelLog returns generated.FuelLogResolver implementation.
