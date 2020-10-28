@@ -115,6 +115,7 @@
 import Vue from 'vue'
 import debug from 'debug'
 import updatePreference from '~/apollo/mutations/updatePreference.graphql'
+import type { User } from '~/store/user'
 
 const d = debug('ml.web.pages.profile')
 
@@ -135,12 +136,12 @@ export default Vue.extend({
 		}
 	},
 	computed: {
-		user() {
+		user(): User {
 			return this.$store.state.user
 		},
 	},
 	methods: {
-		async updatePreference() {
+		async updatePreference(): Promise<void> {
 			try {
 				await this.$apollo.mutate({
 					mutation: updatePreference,
