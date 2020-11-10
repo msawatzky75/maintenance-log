@@ -8,13 +8,13 @@ import (
 	"fmt"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/msawatzky75/maintenence-log/server/graph/generated"
-	"github.com/msawatzky75/maintenence-log/server/graph/model"
-	"github.com/msawatzky75/maintenence-log/server/middleware"
-	uuid "github.com/satori/go.uuid"
+	generated1 "github.com/msawatzky75/maintenance-log/server/graph/generated"
+	model1 "github.com/msawatzky75/maintenance-log/server/graph/model"
+	"github.com/msawatzky75/maintenance-log/server/middleware"
+	"github.com/satori/go.uuid"
 )
 
-func (r *mutationResolver) CreateVehicle(ctx context.Context, data model.VehicleInput) (*model.Vehicle, error) {
+func (r *mutationResolver) CreateVehicle(ctx context.Context, data model1.VehicleInput) (*model1.Vehicle, error) {
 	uid, err := uuid.FromString((*ctx.Value(middleware.JwtContextKey).(*jwt.MapClaims))["userId"].(string))
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func (r *mutationResolver) CreateVehicle(ctx context.Context, data model.Vehicle
 	return v, nil
 }
 
-func (r *mutationResolver) CreateFuelLog(ctx context.Context, data model.FuelLogInput) (*model.FuelLog, error) {
+func (r *mutationResolver) CreateFuelLog(ctx context.Context, data model1.FuelLogInput) (*model1.FuelLog, error) {
 	tx := r.DB.Begin()
 	// Rollback the transaction if the routine panics
 	defer func() {
@@ -77,7 +77,7 @@ func (r *mutationResolver) CreateFuelLog(ctx context.Context, data model.FuelLog
 	return &l, tx.Commit().Error
 }
 
-func (r *mutationResolver) CreateMaintenanceLog(ctx context.Context, data model.MaintenanceLogInput) (*model.MaintenanceLog, error) {
+func (r *mutationResolver) CreateMaintenanceLog(ctx context.Context, data model1.MaintenanceLogInput) (*model1.MaintenanceLog, error) {
 	tx := r.DB.Begin()
 	// Rollback the transaction if the routine panics
 	defer func() {
@@ -110,7 +110,7 @@ func (r *mutationResolver) CreateMaintenanceLog(ctx context.Context, data model.
 	return &l, tx.Commit().Error
 }
 
-func (r *mutationResolver) CreateOilChangeLog(ctx context.Context, data model.OilChangeLogInput) (*model.OilChangeLog, error) {
+func (r *mutationResolver) CreateOilChangeLog(ctx context.Context, data model1.OilChangeLogInput) (*model1.OilChangeLog, error) {
 	tx := r.DB.Begin()
 	// Rollback the transaction if the routine panics
 	defer func() {
@@ -143,7 +143,7 @@ func (r *mutationResolver) CreateOilChangeLog(ctx context.Context, data model.Oi
 	return &l, tx.Commit().Error
 }
 
-func (r *mutationResolver) UpdatePreference(ctx context.Context, data model.UserPreferenceInput) (*model.UserPreference, error) {
+func (r *mutationResolver) UpdatePreference(ctx context.Context, data model1.UserPreferenceInput) (*model1.UserPreference, error) {
 	var (
 		p   model.UserPreference
 		u   *model.User
@@ -230,7 +230,7 @@ func (r *mutationResolver) DeleteOilChangeLog(ctx context.Context, id string) (*
 	return &s, err
 }
 
-func (r *queryResolver) GetUser(ctx context.Context, id *string) (*model.User, error) {
+func (r *queryResolver) GetUser(ctx context.Context, id *string) (*model1.User, error) {
 	var (
 		u   *model.User
 		err error
@@ -252,7 +252,7 @@ func (r *queryResolver) GetUser(ctx context.Context, id *string) (*model.User, e
 	return u, nil
 }
 
-func (r *queryResolver) GetVehicle(ctx context.Context, id string) (*model.Vehicle, error) {
+func (r *queryResolver) GetVehicle(ctx context.Context, id string) (*model1.Vehicle, error) {
 	var v model.Vehicle
 	uid, err := uuid.FromString(id)
 	if err != nil {
@@ -262,11 +262,11 @@ func (r *queryResolver) GetVehicle(ctx context.Context, id string) (*model.Vehic
 	return &v, nil
 }
 
-// Mutation returns generated.MutationResolver implementation.
-func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
+// Mutation returns generated1.MutationResolver implementation.
+func (r *Resolver) Mutation() generated1.MutationResolver { return &mutationResolver{r} }
 
-// Query returns generated.QueryResolver implementation.
-func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
+// Query returns generated1.QueryResolver implementation.
+func (r *Resolver) Query() generated1.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

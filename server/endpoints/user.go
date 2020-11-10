@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/msawatzky75/maintenence-log/server/graph/model"
+	"github.com/msawatzky75/maintenance-log/server/graph/model"
 )
 
 func (l *Login) signup(w http.ResponseWriter, r *http.Request) {

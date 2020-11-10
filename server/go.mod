@@ -1,4 +1,4 @@
-module github.com/msawatzky75/maintenence-log/server
+module github.com/msawatzky75/maintenance-log/server
 
 go 1.14
 

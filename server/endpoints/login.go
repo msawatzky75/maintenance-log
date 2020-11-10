@@ -7,7 +7,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
-	"github.com/msawatzky75/maintenence-log/server/graph/model"
+	"github.com/msawatzky75/maintenance-log/server/graph/model"
 	"golang.org/x/crypto/bcrypt"
 )
 

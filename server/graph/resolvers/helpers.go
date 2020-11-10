@@ -5,7 +5,7 @@ import (
 	"sort"
 
 	"github.com/jinzhu/gorm"
-	"github.com/msawatzky75/maintenence-log/server/graph/model"
+	"github.com/msawatzky75/maintenance-log/server/graph/model"
 	uuid "github.com/satori/go.uuid"
 )
 

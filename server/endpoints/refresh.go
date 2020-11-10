@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/msawatzky75/maintenence-log/server/graph/model"
+	"github.com/msawatzky75/maintenance-log/server/graph/model"
 )
 
 // RefreshHandler handles refreshing jwt tokens
