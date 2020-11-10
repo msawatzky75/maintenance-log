@@ -21,13 +21,16 @@ export default Vue.extend({
 		},
 		type: {
 			type: Object,
-			default: () => null,
+			default: () => null as Object | null,
 		},
 		schema: {
-			type: Object as () => StringSchema,
+			type: Object as () => StringSchema | null,
 			default: () => yup.string().nullable().label('Date'),
 		},
-		required: Boolean,
+		required: {
+			type: Boolean,
+			default: () => false,
+		},
 	},
 	data() {
 		return {
@@ -36,17 +39,20 @@ export default Vue.extend({
 		}
 	},
 	computed: {
-		validationSchema() {
+		// Must specify return type here or typescript gets upset
+		validationSchema(): StringSchema {
+			const schema = (this.schema as StringSchema) || yup.string().nullable().label('Date')
+
 			if (this.required) {
-				return this.schema.required()
+				return schema.required()
 			}
-			return this.schema
+			return schema
 		},
 	},
 	watch: {
 		// Handles internal model changes.
 		innerValue(newVal) {
-			this.$emit('input', newVal === '' ? null : newVal)
+			this.$emit('input', newVal === '' ? (null as string | null) : newVal)
 		},
 		// Handles external model changes.
 		value(newVal) {

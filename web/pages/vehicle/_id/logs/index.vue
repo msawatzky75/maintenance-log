@@ -74,7 +74,11 @@ const d = debug('ml.pages.vehicle._id.logs.index')
 export default Vue.extend({
 	name: 'Logs',
 	async asyncData({ app, params }) {
-		const apollo = app.apolloProvider.defaultClient
+		const apollo = app.apolloProvider?.defaultClient
+
+		if (!apollo) {
+			throw new Error('Apollo Error: Unable to find an apollo provider.')
+		}
 
 		return {
 			vehicle: (

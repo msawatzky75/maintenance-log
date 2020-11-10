@@ -49,15 +49,19 @@
 <script lang="ts">
 import Vue from 'vue'
 import moment from 'moment'
-import VehicleQuery from '@/apollo/queries/vehicle.graphql'
+import VehicleQuery from '~/apollo/queries/vehicle.graphql'
+import type { User } from '~/store/user'
 
 export default Vue.extend({
 	validate({ params, store }) {
-		return store.state.user.vehicles && !!store.state.user.vehicles.find((v) => v.id === params.id)
+		return !!(store.state.user as User).vehicles?.find((v) => v.id === params.id)
 	},
 	async asyncData({ app, params }) {
-		const apollo = app.apolloProvider.defaultClient
+		const apollo = app.apolloProvider?.defaultClient
 
+		if (!apollo) {
+			throw new Error('Apollo Error: Unable to find an apollo provider.')
+		}
 		return {
 			vehicle: (
 				await apollo.query({
