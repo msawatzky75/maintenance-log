@@ -1,4 +1,14 @@
-# web
+# Maintenance Log Tracker Frontend
+
+## Environment Setup
+
+The debug namespace is `ml`, so if you are trying to view log outputs, this is the namespace to use. Set this in your browser's localstorage under the `DEBUG` key. For more details see: [debug](https://www.npmjs.com/package/debug)
+
+```
+API_URL=localhost:4000/
+```
+
+`API_URL` is required for the application to communicate with the server.
 
 ## Build Setup
 
