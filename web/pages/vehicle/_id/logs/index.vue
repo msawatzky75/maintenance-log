@@ -35,7 +35,7 @@
 				</BTableColumn>
 
 				<BTableColumn v-slot="props" field="__typename" label="Type" sortable>
-					{{ $store.state.logTypes[props.row.__typename] || props.row.__typename }}
+					{{ $store.getters.logType(props.row.__typename).name || props.row.__typename }}
 				</BTableColumn>
 
 				<BTableColumn v-slot="props" field="odometer.value" label="Odometer" sortable>
