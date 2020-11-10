@@ -18,11 +18,11 @@ interface MoneyValue {
 	type: 'usd' | 'cad'
 }
 
-interface UserPreference {
-	distance: DistanceValue['type'] | null
-	fluid: FluidValue['type'] | null
-	money: MoneyValue['type'] | null
-	vehicle: Vehicle['id'] | null
+export interface Log {
+	id: string
+	notes: string
+	date: string
+	__typename: string
 }
 
 interface Vehicle {
@@ -31,6 +31,13 @@ interface Vehicle {
 	model: string
 	year: number
 	odometer: DistanceValue
+}
+
+interface UserPreference {
+	distance: DistanceValue['type'] | null
+	fluid: FluidValue['type'] | null
+	money: MoneyValue['type'] | null
+	vehicle: Vehicle['id'] | null
 }
 
 export interface User {

@@ -16,23 +16,21 @@
 
 				<template v-if="vehicle && vehicle.logs">
 					<BTable :data="vehicle.logs" :mobile-cards="false">
-						<template #default="props">
-							<BTableColumn field="date" label="Date" sortable>
-								{{ props.row.date }}
-							</BTableColumn>
+						<BTableColumn v-slot="props" field="date" label="Date" sortable>
+							{{ formatDate(props.row.date) }}
+						</BTableColumn>
 
-							<BTableColumn field="__typename" label="Type" sortable>
-								{{ props.row.__typename }}
-							</BTableColumn>
+						<BTableColumn v-slot="props" field="__typename" label="Type" sortable>
+							{{ props.row.__typename }}
+						</BTableColumn>
 
-							<BTableColumn field="odometer.value" label="Odometer" sortable>
-								<DistanceDisplay v-bind="props.row.odometer" />
-							</BTableColumn>
+						<BTableColumn v-slot="props" field="odometer.value" label="Odometer" sortable>
+							<DistanceDisplay v-bind="props.row.odometer" />
+						</BTableColumn>
 
-							<BTableColumn field="notes" label="Notes" sortable>
-								{{ props.row.notes }}
-							</BTableColumn>
-						</template>
+						<BTableColumn v-slot="props" field="notes" label="Notes" sortable>
+							{{ props.row.notes }}
+						</BTableColumn>
 					</BTable>
 				</template>
 
@@ -48,10 +46,12 @@
 	</section>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from 'vue'
+import moment from 'moment'
 import VehicleQuery from '@/apollo/queries/vehicle.graphql'
 
-export default {
+export default Vue.extend({
 	validate({ params, store }) {
 		return store.state.user.vehicles && !!store.state.user.vehicles.find((v) => v.id === params.id)
 	},
@@ -75,5 +75,10 @@ export default {
 			vehicle: { logs: [] },
 		}
 	},
-}
+	methods: {
+		formatDate(d: Date | string): string {
+			return moment(d).format('YYYY-MM-DD HH:mm:ss')
+		},
+	},
+})
 </script>

@@ -4,7 +4,7 @@
 		<section>
 			<BField label="Log Type">
 				<BSelect v-model="selectedLogType" required placeholder="Select a log type">
-					<option v-for="t in LogTypes" :key="t.type" :value="t">
+					<option v-for="t in $store.state.logTypes" :key="t.value" :value="t">
 						{{ t.name }}
 					</option>
 				</BSelect>
@@ -13,15 +13,15 @@
 
 		<form @submit.prevent="submitLog">
 			<section v-if="selectedLogType" class="mt-4">
-				<template v-if="selectedLogType === LogTypes.FuelLog">
+				<template v-if="selectedLogType.value === LogTypes.FuelLog">
 					<FuelLogInput :ref="LogTypes.FuelLog" v-model="log" />
 				</template>
 
-				<template v-else-if="selectedLogType === LogTypes.MaintenenceLog">
-					<MaintenenceLogInput :ref="LogTypes.MaintenenceLog" v-model="log" />
+				<template v-else-if="selectedLogType.value === LogTypes.MaintenanceLog">
+					<MaintenenceLogInput :ref="LogTypes.MaintenanceLog" v-model="log" />
 				</template>
 
-				<template v-else-if="selectedLogType === LogTypes.OilChangeLog">
+				<template v-else-if="selectedLogType.value === LogTypes.OilChangeLog">
 					<OilChangeLogInput :ref="LogTypes.OilChangeLog" v-model="log" />
 				</template>
 
@@ -37,35 +37,20 @@
 
 <script>
 import debug from 'debug'
-import CreateFuelLog from '~/apollo/mutations/create-fuel-log.graphql'
-import CreateMaintenenceLog from '~/apollo/mutations/create-maintenence-log.graphql'
-import CreateOilChangeLog from '~/apollo/mutations/create-oil-change-log.graphql'
 
 const d = debug('ml.pages.vheicle._id.logs.new')
 
 const LogTypes = {
-	FuelLog: {
-		type: 'FuelLog',
-		name: 'Fuel Log',
-		_mutation: CreateFuelLog,
-	},
-	MaintenenceLog: {
-		type: 'MaintenenceLog',
-		name: 'Maintenence Log',
-		_mutation: CreateMaintenenceLog,
-	},
-	OilChangeLog: {
-		type: 'OilChangeLog',
-		name: 'Oil Change Log',
-		_mutation: CreateOilChangeLog,
-	},
+	FuelLog: 'FuelLog',
+	MaintenanceLog: 'MaintenanceLog',
+	OilChangeLog: 'OilChangeLog',
 }
 
 export default {
 	data() {
 		return {
 			LogTypes,
-			selectedLogType: this.$route.query.type ? LogTypes[this.$route.query.type] : null,
+			selectedLogType: this.$route.query.type ? this.$store.getters.logType(this.$route.query.type) : null,
 			log: null,
 			error: null,
 		}
@@ -84,17 +69,17 @@ export default {
 		async submitLog() {
 			// d({ ...this.log, vehicleId: this.$route.params.id })
 			try {
-				await this.$refs[this.selectedLogType].validate()
+				await this.$refs[this.selectedLogType.value].validate()
 				try {
 					await this.$apollo.mutate({
-						mutation: this.selectedLogType._mutation,
+						mutation: this.selectedLogType.createMutation,
 						variables: {
 							data: { ...this.log, vehicleId: this.$route.params.id },
 						},
 					})
 					this.$router.push({ name: 'vehicle-id-logs' })
 				} catch (e) {
-					d('Submition Error', Object.keys(e), e.graphqlErrors, e.message)
+					d('Submition Error', e.graphqlErrors, e.message)
 					this.error = e.networkError.result.errors
 				}
 			} catch (e) {

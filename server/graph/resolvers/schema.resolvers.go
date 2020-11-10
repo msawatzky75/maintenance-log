@@ -5,12 +5,13 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/msawatzky75/maintenence-log/server/graph/generated"
 	"github.com/msawatzky75/maintenence-log/server/graph/model"
 	"github.com/msawatzky75/maintenence-log/server/middleware"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 func (r *mutationResolver) CreateVehicle(ctx context.Context, data model.VehicleInput) (*model.Vehicle, error) {
@@ -182,6 +183,51 @@ func (r *mutationResolver) UpdatePreference(ctx context.Context, data model.User
 	r.DB.Save(&p)
 
 	return &p, nil
+}
+
+func (r *mutationResolver) DeleteFuelLog(ctx context.Context, id string) (*bool, error) {
+	var (
+		err error
+		s   = true
+	)
+
+	err = r.DB.Delete(&model.FuelLog{}).Where("id = ?", id).Error
+	if err != nil {
+		fmt.Print(err)
+		s = false
+	}
+
+	return &s, err
+}
+
+func (r *mutationResolver) DeleteMaintenanceLog(ctx context.Context, id string) (*bool, error) {
+	var (
+		err error
+		s   = true
+	)
+
+	err = r.DB.Delete(&model.MaintenanceLog{}).Where("id = ?", id).Error
+	if err != nil {
+		fmt.Print(err)
+		s = false
+	}
+
+	return &s, err
+}
+
+func (r *mutationResolver) DeleteOilChangeLog(ctx context.Context, id string) (*bool, error) {
+	var (
+		err error
+		s   = true
+	)
+
+	err = r.DB.Delete(&model.OilChangeLog{}).Where("id = ?", id).Error
+	if err != nil {
+		fmt.Print(err)
+		s = false
+	}
+
+	return &s, err
 }
 
 func (r *queryResolver) GetUser(ctx context.Context, id *string) (*model.User, error) {

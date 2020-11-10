@@ -78,31 +78,25 @@
 						<h4 class="title">{{ v.year }} {{ v.make }} {{ v.model }}</h4>
 						<DistanceDisplay class="subtitle is-6" v-bind="v.odometer" />
 
-						<BTable
-							v-if="v.logs && v.logs.length"
-							class="is-hidden-mobile"
-							:data="v.logs"
-							default-sort="date"
-							default-sort-direction="desc"
-						>
-							<template #default="props">
-								<BTableColumn field="date" label="Date" width="40" sortable>
-									{{ new Date(props.row.date).toISOString().split('T')[0] }}
+						<template v-if="v.logs && v.logs.length">
+							<BTable class="is-hidden-mobile" :data="v.logs" default-sort="date" default-sort-direction="desc">
+								<BTableColumn v-slot="props" field="date" label="Date" width="40" sortable>
+									{{ formatDate(props.row.date) }}
 								</BTableColumn>
 
-								<BTableColumn field="odometer.value" label="Odometer" class="has-text-right" sortable>
+								<BTableColumn v-slot="props" field="odometer.value" label="Odometer" class="has-text-right" sortable>
 									<DistanceDisplay v-bind="props.row.odometer" short />
 								</BTableColumn>
 
-								<BTableColumn field="notes" label="Notes" sortable>
+								<BTableColumn v-slot="props" field="notes" label="Notes" sortable>
 									{{ props.row.notes }}
 								</BTableColumn>
 
-								<BTableColumn field="__typename" label="Log Type" sortable>
+								<BTableColumn v-slot="props" field="__typename" label="Log Type" sortable>
 									{{ $store.state.logTypes[props.row.__typename] }}
 								</BTableColumn>
-							</template>
-						</BTable>
+							</BTable>
+						</template>
 						<div v-else>No logs yet.</div>
 					</NuxtLink>
 				</div>
@@ -114,6 +108,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import debug from 'debug'
+import moment from 'moment'
 import updatePreference from '~/apollo/mutations/updatePreference.graphql'
 import type { User } from '~/store/user'
 
@@ -141,6 +136,9 @@ export default Vue.extend({
 		},
 	},
 	methods: {
+		formatDate(d: Date | string): string {
+			return moment(d).format('YYYY-MM-DD HH:mm:ss')
+		},
 		async updatePreference(): Promise<void> {
 			try {
 				await this.$apollo.mutate({
@@ -155,7 +153,7 @@ export default Vue.extend({
 					},
 				})
 			} catch (e) {
-				d('Submition Error', Object.keys(e), e.graphqlErrors, e.message)
+				d('Submition Error', e.graphqlErrors, e.message)
 				if (e.networkError) {
 					this.error = e.networkError.result.errors
 				} else {

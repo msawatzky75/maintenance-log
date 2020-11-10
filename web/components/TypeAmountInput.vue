@@ -7,7 +7,7 @@
 				</option>
 			</BSelect>
 
-			<BInput v-model.number="innerValue.amount" type="number" :placeholder="amountPlaceholder" />
+			<BInput v-model.number="innerValue.value" type="number" :placeholder="valuePlaceholder" />
 		</BField>
 	</BField>
 </template>
@@ -17,39 +17,39 @@ import * as yup from 'yup'
 import debug from 'debug'
 import Vue from 'vue'
 
-const d = debug('ml.components.TypeAmountInput')
+const d = debug('ml.components.TypeValueInput')
 
-interface TypeAmount {
+interface TypeValue {
 	type: string | null
-	amount: number | null
+	value: number | null
 }
 
 export default Vue.extend({
-	name: 'TypeAmountInput',
+	name: 'TypeValueInput',
 	props: {
 		// options in Type dropdown
 		types: { type: Array as () => Array<string>, required: true },
 
 		// selected value and type
-		value: { type: Object as () => TypeAmount, default: () => ({ type: null, amount: null }) },
+		value: { type: Object as () => TypeValue, default: () => ({ type: null, value: null }) },
 		label: { type: String, required: false, default: () => null },
-		amountPlaceholder: { type: String, default: () => null },
+		valuePlaceholder: { type: String, default: () => null },
 		typePlaceholder: { type: String, default: () => null },
 		schema: {
-			type: Object as () => yup.ObjectSchema<TypeAmount>,
+			type: Object as () => yup.ObjectSchema<TypeValue>,
 			default: () =>
 				yup.object().shape({
 					type: yup.string().nullable().label('Type').required(),
-					value: yup.number().nullable().label('Amount').required(),
+					value: yup.number().nullable().label('Value').required(),
 				}),
 		},
 	},
 	data() {
 		return {
 			innerValue: {
-				amount: null,
+				value: null,
 				type: null,
-			} as TypeAmount,
+			} as TypeValue,
 			errors: [] as string[],
 		}
 	},
@@ -64,7 +64,7 @@ export default Vue.extend({
 	watch: {
 		innerValue: {
 			handler(newVal) {
-				this.$emit('input', newVal.amount === '' ? { ...newVal, amount: null } : newVal)
+				this.$emit('input', newVal.value === '' ? { ...newVal, value: null } : newVal)
 			},
 			deep: true,
 		},
@@ -94,7 +94,7 @@ export default Vue.extend({
 
 		reset() {
 			this.innerValue = {
-				amount: null,
+				value: null,
 				type: null,
 			}
 			this.errors = []

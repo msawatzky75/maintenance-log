@@ -17,7 +17,7 @@
 			"~/*": ["./*"],
 			"@/*": ["./*"]
 		},
-		"types": ["@types/node", "@nuxt/types", "vue-apollo/types", "./gql.d.ts"]
+		"types": ["@types/node", "@nuxt/types", "vue-apollo/types", "buefy/types", "./gql.d.ts"]
 	},
 	"exclude": ["node_modules", ".nuxt", "dist"]
 }

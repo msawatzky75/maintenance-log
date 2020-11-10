@@ -99,7 +99,7 @@ export default {
 		redirect: {
 			login: '/login',
 			logout: '/',
-			home: '/home',
+			home: '/profile',
 		},
 	},
 

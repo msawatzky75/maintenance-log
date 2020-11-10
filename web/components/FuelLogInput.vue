@@ -19,7 +19,7 @@
 					v-model="innerValue.fuelAmount"
 					:types="$store.state.fluidTypes"
 					label="Fuel Amount"
-					amount-placeholder="Fluid Value"
+					value-placeholder="Fluid Value"
 					type-placeholder="Fluid Type"
 				/>
 			</div>
@@ -30,7 +30,7 @@
 					v-model="innerValue.fuelPrice"
 					:types="$store.state.currencyTypes"
 					label="Fuel Price"
-					amount-placeholder="Currency Value"
+					value-placeholder="Currency Value"
 					type-placeholder="Currency Type"
 				/>
 			</div>
@@ -51,7 +51,7 @@
 					v-model="innerValue.trip"
 					:types="$store.state.distanceTypes"
 					label="Trip"
-					amount-placeholder="Distance Value"
+					value-placeholder="Distance Value"
 					type-placeholder="Distance Type"
 				/>
 			</div>
@@ -62,7 +62,7 @@
 					v-model="innerValue.odometer"
 					:types="$store.state.distanceTypes"
 					label="Odometer"
-					amount-placeholder="Distance Value"
+					value-placeholder="Distance Value"
 					type-placeholder="Distance Type"
 				/>
 			</div>

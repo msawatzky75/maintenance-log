@@ -6,6 +6,7 @@
 
 <script lang="ts">
 import type { StringSchema } from 'yup'
+import * as yup from 'yup'
 import debug from 'debug'
 import Vue from 'vue'
 
@@ -24,14 +25,23 @@ export default Vue.extend({
 		},
 		schema: {
 			type: Object as () => StringSchema,
-			required: true,
+			default: () => yup.string().nullable().label('Date'),
 		},
+		required: Boolean,
 	},
 	data() {
 		return {
 			innerValue: null as Date | null,
 			errors: [] as string[],
 		}
+	},
+	computed: {
+		validationSchema() {
+			if (this.required) {
+				return this.schema.required()
+			}
+			return this.schema
+		},
 	},
 	watch: {
 		// Handles internal model changes.
@@ -51,7 +61,7 @@ export default Vue.extend({
 	methods: {
 		async validate(): Promise<void> {
 			try {
-				await this.schema.validate(this.innerValue, { abortEarly: false })
+				await this.validationSchema.validate(this.innerValue, { abortEarly: false })
 				this.errors = []
 			} catch (e) {
 				this.errors = e.errors

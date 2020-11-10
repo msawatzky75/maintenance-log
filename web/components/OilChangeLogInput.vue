@@ -19,7 +19,7 @@
 					v-model="innerValue.odometer"
 					:types="$store.state.distanceTypes"
 					label="Odometer"
-					amount-placeholder="Distance Value"
+					value-placeholder="Distance Value"
 					type-placeholder="Distance Type"
 				/>
 			</div>

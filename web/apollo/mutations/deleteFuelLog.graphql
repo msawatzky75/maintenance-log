@@ -1,0 +1,3 @@
+mutation ($id: String!) {
+	deleteFuelLog(id: $id)
+}

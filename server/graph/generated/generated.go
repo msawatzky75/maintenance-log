@@ -97,6 +97,9 @@ type ComplexityRoot struct {
 		CreateMaintenanceLog func(childComplexity int, data model.MaintenanceLogInput) int
 		CreateOilChangeLog   func(childComplexity int, data model.OilChangeLogInput) int
 		CreateVehicle        func(childComplexity int, data model.VehicleInput) int
+		DeleteFuelLog        func(childComplexity int, id string) int
+		DeleteMaintenanceLog func(childComplexity int, id string) int
+		DeleteOilChangeLog   func(childComplexity int, id string) int
 		UpdatePreference     func(childComplexity int, data model.UserPreferenceInput) int
 	}
 
@@ -166,6 +169,9 @@ type MutationResolver interface {
 	CreateMaintenanceLog(ctx context.Context, data model.MaintenanceLogInput) (*model.MaintenanceLog, error)
 	CreateOilChangeLog(ctx context.Context, data model.OilChangeLogInput) (*model.OilChangeLog, error)
 	UpdatePreference(ctx context.Context, data model.UserPreferenceInput) (*model.UserPreference, error)
+	DeleteFuelLog(ctx context.Context, id string) (*bool, error)
+	DeleteMaintenanceLog(ctx context.Context, id string) (*bool, error)
+	DeleteOilChangeLog(ctx context.Context, id string) (*bool, error)
 }
 type OilChangeLogResolver interface {
 	ID(ctx context.Context, obj *model.OilChangeLog) (string, error)
@@ -464,6 +470,42 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateVehicle(childComplexity, args["data"].(model.VehicleInput)), true
+
+	case "Mutation.deleteFuelLog":
+		if e.complexity.Mutation.DeleteFuelLog == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteFuelLog_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteFuelLog(childComplexity, args["id"].(string)), true
+
+	case "Mutation.deleteMaintenanceLog":
+		if e.complexity.Mutation.DeleteMaintenanceLog == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteMaintenanceLog_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteMaintenanceLog(childComplexity, args["id"].(string)), true
+
+	case "Mutation.deleteOilChangeLog":
+		if e.complexity.Mutation.DeleteOilChangeLog == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteOilChangeLog_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteOilChangeLog(childComplexity, args["id"].(string)), true
 
 	case "Mutation.updatePreference":
 		if e.complexity.Mutation.UpdatePreference == nil {
@@ -943,6 +985,10 @@ type Mutation {
 	createOilChangeLog(data: OilChangeLogInput!): OilChangeLog!
 
 	updatePreference(data: UserPreferenceInput!): UserPreference!
+
+	deleteFuelLog(id: String!): Boolean
+	deleteMaintenanceLog(id: String!): Boolean
+	deleteOilChangeLog(id: String!): Boolean
 }
 
 schema {
@@ -1123,6 +1169,48 @@ func (ec *executionContext) field_Mutation_createVehicle_args(ctx context.Contex
 		}
 	}
 	args["data"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteFuelLog_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteMaintenanceLog_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteOilChangeLog_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -2357,6 +2445,120 @@ func (ec *executionContext) _Mutation_updatePreference(ctx context.Context, fiel
 	res := resTmp.(*model.UserPreference)
 	fc.Result = res
 	return ec.marshalNUserPreference2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenenceᚑlogᚋserverᚋgraphᚋmodelᚐUserPreference(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteFuelLog(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteFuelLog_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteFuelLog(rctx, args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteMaintenanceLog(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteMaintenanceLog_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteMaintenanceLog(rctx, args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteOilChangeLog(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteOilChangeLog_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteOilChangeLog(rctx, args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _OilChangeLog_id(ctx context.Context, field graphql.CollectedField, obj *model.OilChangeLog) (ret graphql.Marshaler) {
@@ -5246,6 +5448,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "deleteFuelLog":
+			out.Values[i] = ec._Mutation_deleteFuelLog(ctx, field)
+		case "deleteMaintenanceLog":
+			out.Values[i] = ec._Mutation_deleteMaintenanceLog(ctx, field)
+		case "deleteOilChangeLog":
+			out.Values[i] = ec._Mutation_deleteOilChangeLog(ctx, field)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

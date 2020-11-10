@@ -1,9 +1,9 @@
 <template>
 	<section class="section">
-		<h3 class="title is-3">Logs</h3>
+		<h3 class="title is-3">Logs for {{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</h3>
 
 		<section>
-			<BButton tag="nuxt-link" :to="{ name: 'vehicle-id-logs-new', query: { type: 'MaintenenceLog' } }">
+			<BButton tag="nuxt-link" :to="{ name: 'vehicle-id-logs-new', query: { type: 'MaintenanceLog' } }">
 				Create New Log
 			</BButton>
 
@@ -11,7 +11,7 @@
 				Create New Fuel Log
 			</BButton>
 
-			<BButton tag="nuxt-link" :to="{ name: 'vehicle-id-logs-new', query: { type: 'MaintenenceLog' } }">
+			<BButton tag="nuxt-link" :to="{ name: 'vehicle-id-logs-new', query: { type: 'MaintenanceLog' } }">
 				Create New Maintenence Log
 			</BButton>
 
@@ -30,23 +30,28 @@
 				default-sort-direction="desc"
 				sort-icon="chevron-up"
 			>
-				<template #default="props">
-					<BTableColumn field="date" label="Date" sortable>
-						{{ props.row.date }}
-					</BTableColumn>
+				<BTableColumn v-slot="props" field="date" label="Date" sortable>
+					{{ formatDate(props.row.date) }}
+				</BTableColumn>
 
-					<BTableColumn field="__typename" label="Type" sortable>
-						{{ props.row.__typename }}
-					</BTableColumn>
+				<BTableColumn v-slot="props" field="__typename" label="Type" sortable>
+					{{ $store.state.logTypes[props.row.__typename] || props.row.__typename }}
+				</BTableColumn>
 
-					<BTableColumn field="odometer.value" label="Odometer" sortable>
-						<DistanceDisplay v-bind="props.row.odometer" />
-					</BTableColumn>
+				<BTableColumn v-slot="props" field="odometer.value" label="Odometer" sortable>
+					<DistanceDisplay v-bind="props.row.odometer" />
+				</BTableColumn>
 
-					<BTableColumn field="notes" label="Notes" sortable>
-						{{ props.row.notes }}
-					</BTableColumn>
-				</template>
+				<BTableColumn v-slot="props" field="notes" label="Notes" sortable>
+					{{ props.row.notes }}
+				</BTableColumn>
+
+				<BTableColumn v-slot="props" field="id" class="action-column">
+					<div class="is-pulled-right">
+						<!-- <BButton type="is-info" icon-right="pencil" /> -->
+						<BButton type="is-danger" icon-right="delete" @click="deleteLog(props.row)" />
+					</div>
+				</BTableColumn>
 			</BTable>
 
 			<section v-if="!vehicle.logs">
@@ -58,36 +63,75 @@
 	</section>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from 'vue'
 import debug from 'debug'
-import VehicleQuery from '@/apollo/queries/vehicle.graphql'
+import moment from 'moment'
+import VehicleQuery from '~/apollo/queries/vehicle.graphql'
+import type { Log } from '~/store/user'
 
 const d = debug('ml.pages.vehicle._id.logs.index')
-export default {
+export default Vue.extend({
 	name: 'Logs',
-	apollo: {
-		getVehicle: {
-			query: VehicleQuery,
-			variables() {
-				return {
-					id: this.$route.params.id,
-					logFilter: { recent: 25 }, // TODO pagination here
-				}
-			},
-			result({ data, loading }) {
-				if (!loading) {
-					this.vehicle = data.getVehicle
-				}
-			},
-		},
+	async asyncData({ app, params }) {
+		const apollo = app.apolloProvider.defaultClient
+
+		return {
+			vehicle: (
+				await apollo.query({
+					query: VehicleQuery,
+					variables: {
+						id: params.id,
+						logFilter: { recent: 25 },
+					},
+				})
+			).data.getVehicle,
+		}
 	},
 	data() {
 		return {
 			vehicle: null,
 		}
 	},
-	async mounted() {
-		await this.$apollo.queries.getVehicle.refetch()
+	methods: {
+		formatDate(d: moment.MomentInput): string {
+			return moment(d).format('YYYY-MM-DD HH:mm:ss')
+		},
+		deleteLog(log: Log): void {
+			this.$buefy.dialog.confirm({
+				title: 'Deleting ' + this.$store.getters.logType(log.__typename).name,
+				message:
+					"Are you sure you want to delete this log? This action cannot be undone. This will not update your vehicle's odometer.<br/><br/>" +
+					`Date: ${this.formatDate(log.date)}<br/>` +
+					`Note: ${log.notes}<br/>`,
+				confirmText: 'Delete Log',
+				type: 'is-danger',
+				hasIcon: true,
+				onConfirm: async () => {
+					try {
+						await this.$apollo.mutate({
+							mutation: this.$store.getters.logType(log.__typename).deleteMutation,
+							variables: {
+								id: log.id,
+								type: log.__typename,
+							},
+						})
+						this.$buefy.toast.open('Log deleted.')
+						// TODO refetch
+					} catch (e) {
+						d('log deletion error', e.graphqlErrors, e.message)
+						this.$buefy.toast.open('Unable to delete, try again later.')
+					}
+				},
+			})
+		},
 	},
-}
+})
 </script>
+
+<style lang="scss">
+.action-column {
+	white-space: nowrap;
+	width: auto;
+}
+</style>

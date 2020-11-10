@@ -70,6 +70,10 @@ type Mutation {
 	createOilChangeLog(data: OilChangeLogInput!): OilChangeLog!
 
 	updatePreference(data: UserPreferenceInput!): UserPreference!
+
+	deleteFuelLog(id: String!): Boolean
+	deleteMaintenanceLog(id: String!): Boolean
+	deleteOilChangeLog(id: String!): Boolean
 }
 
 schema {
