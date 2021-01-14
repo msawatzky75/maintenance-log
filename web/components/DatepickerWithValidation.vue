@@ -1,6 +1,6 @@
 <template>
 	<BField v-bind="$attrs" :type="{ 'is-danger': errors[0] }" :message="errors.length ? errors[0] : null">
-		<BDatepicker v-model="innerValue" v-bind="$attrs" />
+		<BDatepicker v-model="innerValue" v-bind="$attrs" locale="en-CA" />
 	</BField>
 </template>
 

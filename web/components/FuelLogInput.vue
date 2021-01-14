@@ -8,6 +8,7 @@
 					label="Date"
 					placeholder="Click to select..."
 					icon="calendar-today"
+					editable
 					trap-focus
 					required
 				/>
@@ -41,7 +42,9 @@
 					v-model.number="innerValue.grade"
 					label="Fuel Grade"
 					type="number"
-					:schema="yup.number().typeError('Fuel Grade must be a number').nullable().label('Fuel Grade').required()"
+					:schema="
+						yup.number().integer().typeError('Fuel Grade must be a number').nullable().label('Fuel Grade').required()
+					"
 				/>
 			</div>
 
@@ -143,6 +146,7 @@ export default Vue.extend({
 	},
 	methods: {
 		async validate(callback?: Function) {
+			d('validating fuel log...')
 			const promises = Object.keys(this.$refs).map(async (r) => {
 				if ((this.$refs[r] as any).validate instanceof Function) {
 					await (this.$refs[r] as any).validate()

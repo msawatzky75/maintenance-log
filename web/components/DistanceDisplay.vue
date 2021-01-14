@@ -1,8 +1,9 @@
 <template>
-	<p>
+	<p v-if="value">
 		{{ formatNumber(value) }} {{ short ? $store.state.distanceTypes.find((v) => v.value === type).short : type
 		}}{{ (value > 1 || value === 0) && !short ? 's' : '' }}
 	</p>
+	<p v-else>&mdash;</p>
 </template>
 
 <script lang="ts">
