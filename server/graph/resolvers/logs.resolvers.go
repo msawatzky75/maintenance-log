@@ -27,6 +27,21 @@ func (r *fuelLogResolver) Odometer(ctx context.Context, obj *model.FuelLog, type
 	return obj.Odometer, nil
 }
 
+func (r *fuelLogResolver) Efficiency(ctx context.Context, obj *model.FuelLog) (*model.FuelEfficiency, error) {
+	litre := obj.FuelAmount.ConvertTo(model.FluidUnitLitre).Value
+	gallon := obj.FuelAmount.ConvertTo(model.FluidUnitGallon).Value
+	km := obj.Trip.ConvertTo(model.DistanceUnitKilometre).Value
+	mile := obj.Trip.ConvertTo(model.DistanceUnitMile).Value
+
+	e := model.FuelEfficiency{
+		Kml:   *km / *litre,
+		L100k: (100 * *litre) / *km,
+		Mpg:   *mile / *gallon,
+	}
+
+	return &e, nil
+}
+
 func (r *maintenanceLogResolver) ID(ctx context.Context, obj *model.MaintenanceLog) (string, error) {
 	return obj.ID.String(), nil
 }

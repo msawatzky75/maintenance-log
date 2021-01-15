@@ -42,6 +42,10 @@
 					<DistanceDisplay v-bind="props.row.odometer" />
 				</BTableColumn>
 
+				<BTableColumn v-slot="props" field="fuelAmount" label="Fuel Amount" sortable>
+					<DistanceDisplay v-bind="props.row.fuelAmount" />
+				</BTableColumn>
+
 				<BTableColumn v-slot="props" field="grade" label="Fuel Grade" sortable>
 					{{ props.row.grade }}
 				</BTableColumn>
@@ -50,7 +54,9 @@
 					<DistanceDisplay v-bind="props.row.trip" />
 				</BTableColumn>
 
-				<BTableColumn v-slot="props" field="efficency" label="Efficency" sortable> todo </BTableColumn>
+				<BTableColumn v-slot="props" field="efficiency" label="Efficiency" sortable>
+					{{ props.row.efficiency.kml }} km/L
+				</BTableColumn>
 
 				<BTableColumn v-slot="props" field="notes" label="Notes" sortable>
 					{{ props.row.notes }}

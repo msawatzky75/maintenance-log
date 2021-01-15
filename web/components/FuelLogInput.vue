@@ -76,7 +76,7 @@
 			v-model.trim="innerValue.notes"
 			label="Notes"
 			input-type="textarea"
-			:schema="yup.string().nullable().label('Notes').required()"
+			:schema="yup.string().nullable().label('Notes')"
 		/>
 	</section>
 </template>

@@ -11,7 +11,7 @@ import (
 	"github.com/msawatzky75/maintenance-log/server/graph/generated"
 	"github.com/msawatzky75/maintenance-log/server/graph/model"
 	"github.com/msawatzky75/maintenance-log/server/middleware"
-	uuid "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 )
 
 func (r *mutationResolver) CreateVehicle(ctx context.Context, data model.VehicleInput) (*model.Vehicle, error) {
@@ -93,7 +93,7 @@ func (r *mutationResolver) CreateMaintenanceLog(ctx context.Context, data model.
 	}
 
 	o := model.DistanceValue{Value: &data.Odometer.Value, Type: &data.Odometer.Type}
-	l := model.MaintenanceLog{Date: &data.Date, VehicleID: &v.ID, Odometer: &o, Notes: data.Notes}
+	l := model.MaintenanceLog{Date: &data.Date, VehicleID: &v.ID, Odometer: &o, Notes: &data.Notes}
 
 	if err := tx.Create(&l).Error; err != nil {
 		tx.Rollback()

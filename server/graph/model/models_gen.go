@@ -34,11 +34,17 @@ type FluidValueInput struct {
 	Type  FluidUnit `json:"type"`
 }
 
+type FuelEfficiency struct {
+	Kml   float64 `json:"kml"`
+	L100k float64 `json:"l100k"`
+	Mpg   float64 `json:"mpg"`
+}
+
 type FuelLogInput struct {
 	Date       time.Time           `json:"date"`
 	VehicleID  string              `json:"vehicleId"`
 	Odometer   *DistanceValueInput `json:"odometer"`
-	Notes      string              `json:"notes"`
+	Notes      *string             `json:"notes"`
 	Trip       *DistanceValueInput `json:"trip"`
 	Grade      int                 `json:"grade"`
 	FuelAmount *FluidValueInput    `json:"fuelAmount"`
@@ -71,7 +77,7 @@ type OilChangeLogInput struct {
 	Date      time.Time           `json:"date"`
 	VehicleID string              `json:"vehicleId"`
 	Odometer  *DistanceValueInput `json:"odometer"`
-	Notes     string              `json:"notes"`
+	Notes     *string             `json:"notes"`
 }
 
 type UserInput struct {

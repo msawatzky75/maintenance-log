@@ -7,7 +7,7 @@
 				</option>
 			</BSelect>
 
-			<BInput v-model.number="innerValue.value" type="number" step=".01" :placeholder="valuePlaceholder" />
+			<BInput v-model.number="innerValue.value" type="number" :step="step" :placeholder="valuePlaceholder" />
 		</BField>
 	</BField>
 </template>
@@ -35,6 +35,7 @@ export default Vue.extend({
 		label: { type: String, required: false, default: () => null },
 		valuePlaceholder: { type: String, default: () => null },
 		typePlaceholder: { type: String, default: () => null },
+		step: { type: Number, default: 0.001 },
 		schema: {
 			type: Object as () => yup.ObjectSchema<TypeValue>,
 			default: () =>

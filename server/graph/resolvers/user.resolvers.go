@@ -8,7 +8,7 @@ import (
 
 	"github.com/msawatzky75/maintenance-log/server/graph/generated"
 	"github.com/msawatzky75/maintenance-log/server/graph/model"
-	uuid "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 )
 
 func (r *userResolver) ID(ctx context.Context, obj *model.User) (string, error) {
