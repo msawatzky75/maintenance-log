@@ -55,7 +55,7 @@
 				</BTableColumn>
 
 				<BTableColumn v-slot="props" field="efficiency" label="Efficiency" sortable>
-					{{ props.row.efficiency.kml }} km/L
+					{{ round(props.row.efficiency.kml, 2) }} km/L
 				</BTableColumn>
 
 				<BTableColumn v-slot="props" field="notes" label="Notes" sortable>
@@ -144,6 +144,9 @@ export default Vue.extend({
 					}
 				},
 			})
+		},
+		round(value: number, precision: number = 0) {
+			return Math.round(value * Math.pow(10, precision)) / Math.pow(10, precision)
 		},
 	},
 })
