@@ -11,7 +11,7 @@ import (
 	"github.com/msawatzky75/maintenance-log/server/graph/generated"
 	"github.com/msawatzky75/maintenance-log/server/graph/model"
 	"github.com/msawatzky75/maintenance-log/server/middleware"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 func (r *mutationResolver) CreateVehicle(ctx context.Context, data model.VehicleInput) (*model.Vehicle, error) {
