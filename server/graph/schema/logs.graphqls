@@ -6,7 +6,7 @@ interface Log {
   date: Time!
   vehicle: Vehicle!
   odometer(type: DistanceUnit): DistanceValue!
-  notes: String!
+  notes: String
 }
 
 type MaintenanceLog implements Log {
@@ -28,12 +28,13 @@ type FuelLog implements Log {
   date: Time!
   vehicle: Vehicle!
   odometer(type: DistanceUnit): DistanceValue!
-  notes: String!
+  notes: String
 
   trip(type: DistanceUnit): DistanceValue
   grade: Int
   fuelAmount(type: FluidUnit): FluidValue!
   fuelPrice(type: MoneyUnit): MoneyValue
+  efficiency: FuelEfficiency!
 }
 
 type OilChangeLog implements Log {
@@ -44,5 +45,11 @@ type OilChangeLog implements Log {
   date: Time!
   vehicle: Vehicle!
   odometer(type: DistanceUnit): DistanceValue!
-  notes: String!
+  notes: String
+}
+
+type FuelEfficiency {
+  kml: Float!
+  l100k: Float!
+  mpg: Float!
 }

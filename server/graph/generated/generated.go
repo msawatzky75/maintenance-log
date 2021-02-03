@@ -61,10 +61,17 @@ type ComplexityRoot struct {
 		Value func(childComplexity int) int
 	}
 
+	FuelEfficiency struct {
+		Kml   func(childComplexity int) int
+		L100k func(childComplexity int) int
+		Mpg   func(childComplexity int) int
+	}
+
 	FuelLog struct {
 		CreatedAt  func(childComplexity int) int
 		Date       func(childComplexity int) int
 		DeletedAt  func(childComplexity int) int
+		Efficiency func(childComplexity int) int
 		FuelAmount func(childComplexity int, typeArg *model.FluidUnit) int
 		FuelPrice  func(childComplexity int, typeArg *model.MoneyUnit) int
 		Grade      func(childComplexity int) int
@@ -156,6 +163,8 @@ type FuelLogResolver interface {
 
 	Vehicle(ctx context.Context, obj *model.FuelLog) (*model.Vehicle, error)
 	Odometer(ctx context.Context, obj *model.FuelLog, typeArg *model.DistanceUnit) (*model.DistanceValue, error)
+
+	Efficiency(ctx context.Context, obj *model.FuelLog) (*model.FuelEfficiency, error)
 }
 type MaintenanceLogResolver interface {
 	ID(ctx context.Context, obj *model.MaintenanceLog) (string, error)
@@ -244,6 +253,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.FluidValue.Value(childComplexity), true
 
+	case "FuelEfficiency.kml":
+		if e.complexity.FuelEfficiency.Kml == nil {
+			break
+		}
+
+		return e.complexity.FuelEfficiency.Kml(childComplexity), true
+
+	case "FuelEfficiency.l100k":
+		if e.complexity.FuelEfficiency.L100k == nil {
+			break
+		}
+
+		return e.complexity.FuelEfficiency.L100k(childComplexity), true
+
+	case "FuelEfficiency.mpg":
+		if e.complexity.FuelEfficiency.Mpg == nil {
+			break
+		}
+
+		return e.complexity.FuelEfficiency.Mpg(childComplexity), true
+
 	case "FuelLog.createdAt":
 		if e.complexity.FuelLog.CreatedAt == nil {
 			break
@@ -264,6 +294,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.FuelLog.DeletedAt(childComplexity), true
+
+	case "FuelLog.efficiency":
+		if e.complexity.FuelLog.Efficiency == nil {
+			break
+		}
+
+		return e.complexity.FuelLog.Efficiency(childComplexity), true
 
 	case "FuelLog.fuelAmount":
 		if e.complexity.FuelLog.FuelAmount == nil {
@@ -845,7 +882,7 @@ var sources = []*ast.Source{
   date: Time!
   vehicle: Vehicle!
   odometer(type: DistanceUnit): DistanceValue!
-  notes: String!
+  notes: String
 }
 
 type MaintenanceLog implements Log {
@@ -867,12 +904,13 @@ type FuelLog implements Log {
   date: Time!
   vehicle: Vehicle!
   odometer(type: DistanceUnit): DistanceValue!
-  notes: String!
+  notes: String
 
   trip(type: DistanceUnit): DistanceValue
   grade: Int
   fuelAmount(type: FluidUnit): FluidValue!
   fuelPrice(type: MoneyUnit): MoneyValue
+  efficiency: FuelEfficiency!
 }
 
 type OilChangeLog implements Log {
@@ -883,7 +921,13 @@ type OilChangeLog implements Log {
   date: Time!
   vehicle: Vehicle!
   odometer(type: DistanceUnit): DistanceValue!
-  notes: String!
+  notes: String
+}
+
+type FuelEfficiency {
+  kml: Float!
+  l100k: Float!
+  mpg: Float!
 }
 `, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/models.graphqls", Input: `enum DistanceUnit {
@@ -945,7 +989,7 @@ input FuelLogInput {
 	date: Time!
 	vehicleId: String!
 	odometer: DistanceValueInput!
-	notes: String!
+	notes: String
 
 	trip: DistanceValueInput!
 	grade: Int!
@@ -962,7 +1006,7 @@ input OilChangeLogInput {
 	date: Time!
 	vehicleId: String!
 	odometer: DistanceValueInput!
-	notes: String!
+	notes: String
 }
 
 input UserPreferenceInput {
@@ -1486,6 +1530,108 @@ func (ec *executionContext) _FluidValue_type(ctx context.Context, field graphql.
 	return ec.marshalOFluidUnit2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenanceᚑlogᚋserverᚋgraphᚋmodelᚐFluidUnit(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _FuelEfficiency_kml(ctx context.Context, field graphql.CollectedField, obj *model.FuelEfficiency) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "FuelEfficiency",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Kml, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FuelEfficiency_l100k(ctx context.Context, field graphql.CollectedField, obj *model.FuelEfficiency) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "FuelEfficiency",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.L100k, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FuelEfficiency_mpg(ctx context.Context, field graphql.CollectedField, obj *model.FuelEfficiency) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "FuelEfficiency",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Mpg, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _FuelLog_id(ctx context.Context, field graphql.CollectedField, obj *model.FuelLog) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1749,14 +1895,11 @@ func (ec *executionContext) _FuelLog_notes(ctx context.Context, field graphql.Co
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _FuelLog_trip(ctx context.Context, field graphql.CollectedField, obj *model.FuelLog) (ret graphql.Marshaler) {
@@ -1905,6 +2048,40 @@ func (ec *executionContext) _FuelLog_fuelPrice(ctx context.Context, field graphq
 	res := resTmp.(*model.MoneyValue)
 	fc.Result = res
 	return ec.marshalOMoneyValue2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenanceᚑlogᚋserverᚋgraphᚋmodelᚐMoneyValue(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FuelLog_efficiency(ctx context.Context, field graphql.CollectedField, obj *model.FuelLog) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "FuelLog",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.FuelLog().Efficiency(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.FuelEfficiency)
+	fc.Result = res
+	return ec.marshalNFuelEfficiency2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenanceᚑlogᚋserverᚋgraphᚋmodelᚐFuelEfficiency(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _MaintenanceLog_id(ctx context.Context, field graphql.CollectedField, obj *model.MaintenanceLog) (ret graphql.Marshaler) {
@@ -2175,9 +2352,9 @@ func (ec *executionContext) _MaintenanceLog_notes(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _MoneyValue_value(ctx context.Context, field graphql.CollectedField, obj *model.MoneyValue) (ret graphql.Marshaler) {
@@ -2824,14 +3001,11 @@ func (ec *executionContext) _OilChangeLog_notes(ctx context.Context, field graph
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -4871,7 +5045,7 @@ func (ec *executionContext) unmarshalInputFuelLogInput(ctx context.Context, obj 
 			}
 		case "notes":
 			var err error
-			it.Notes, err = ec.unmarshalNString2string(ctx, v)
+			it.Notes, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5015,7 +5189,7 @@ func (ec *executionContext) unmarshalInputOilChangeLogInput(ctx context.Context,
 			}
 		case "notes":
 			var err error
-			it.Notes, err = ec.unmarshalNString2string(ctx, v)
+			it.Notes, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5205,6 +5379,43 @@ func (ec *executionContext) _FluidValue(ctx context.Context, sel ast.SelectionSe
 	return out
 }
 
+var fuelEfficiencyImplementors = []string{"FuelEfficiency"}
+
+func (ec *executionContext) _FuelEfficiency(ctx context.Context, sel ast.SelectionSet, obj *model.FuelEfficiency) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, fuelEfficiencyImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FuelEfficiency")
+		case "kml":
+			out.Values[i] = ec._FuelEfficiency_kml(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "l100k":
+			out.Values[i] = ec._FuelEfficiency_l100k(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "mpg":
+			out.Values[i] = ec._FuelEfficiency_mpg(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var fuelLogImplementors = []string{"FuelLog", "Log"}
 
 func (ec *executionContext) _FuelLog(ctx context.Context, sel ast.SelectionSet, obj *model.FuelLog) graphql.Marshaler {
@@ -5274,9 +5485,6 @@ func (ec *executionContext) _FuelLog(ctx context.Context, sel ast.SelectionSet, 
 			})
 		case "notes":
 			out.Values[i] = ec._FuelLog_notes(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "trip":
 			out.Values[i] = ec._FuelLog_trip(ctx, field, obj)
 		case "grade":
@@ -5288,6 +5496,20 @@ func (ec *executionContext) _FuelLog(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "fuelPrice":
 			out.Values[i] = ec._FuelLog_fuelPrice(ctx, field, obj)
+		case "efficiency":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._FuelLog_efficiency(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5534,9 +5756,6 @@ func (ec *executionContext) _OilChangeLog(ctx context.Context, sel ast.Selection
 			})
 		case "notes":
 			out.Values[i] = ec._OilChangeLog_notes(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6170,6 +6389,20 @@ func (ec *executionContext) unmarshalNFluidValueInput2ᚖgithubᚗcomᚋmsawatzk
 	return &res, err
 }
 
+func (ec *executionContext) marshalNFuelEfficiency2githubᚗcomᚋmsawatzky75ᚋmaintenanceᚑlogᚋserverᚋgraphᚋmodelᚐFuelEfficiency(ctx context.Context, sel ast.SelectionSet, v model.FuelEfficiency) graphql.Marshaler {
+	return ec._FuelEfficiency(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNFuelEfficiency2ᚖgithubᚗcomᚋmsawatzky75ᚋmaintenanceᚑlogᚋserverᚋgraphᚋmodelᚐFuelEfficiency(ctx context.Context, sel ast.SelectionSet, v *model.FuelEfficiency) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._FuelEfficiency(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNFuelLog2githubᚗcomᚋmsawatzky75ᚋmaintenanceᚑlogᚋserverᚋgraphᚋmodelᚐFuelLog(ctx context.Context, sel ast.SelectionSet, v model.FuelLog) graphql.Marshaler {
 	return ec._FuelLog(ctx, sel, &v)
 }
@@ -6285,6 +6518,24 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalNString2string(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalNString2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec.marshalNString2string(ctx, sel, *v)
 }
 
 func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {

@@ -92,8 +92,8 @@ type FuelLog struct {
 	Date       *time.Time     `json:"date"`
 	VehicleID  *uuid.UUID     `json:"vehicle"`
 	Odometer   *DistanceValue `json:"odometer" gorm:"embedded;embedded_prefix:odometer_"`
-	Notes      string         `json:"notes"`
-	Trip       *DistanceValue `json:"trip"`
+	Notes      *string        `json:"notes"`
+	Trip       *DistanceValue `json:"trip" gorm:"embedded;embedded_prefix:trip_"`
 	Grade      *int           `json:"grade"`
 	FuelAmount *FluidValue    `json:"fuelAmount" gorm:"embedded;embedded_prefix:fuel_amount_"`
 	FuelPrice  *MoneyValue    `json:"fuelPrice" gorm:"embedded;embedded_prefix:fuel_price_"`
@@ -110,7 +110,7 @@ type MaintenanceLog struct {
 	Date      *time.Time     `json:"date"`
 	VehicleID *uuid.UUID     `json:"vehicle"`
 	Odometer  *DistanceValue `json:"odometer" gorm:"embedded;embedded_prefix:odometer_"`
-	Notes     string         `json:"notes"`
+	Notes     *string        `json:"notes"`
 }
 
 // IsLog satisfies Log interface
@@ -124,7 +124,7 @@ type OilChangeLog struct {
 	Date      *time.Time     `json:"date"`
 	VehicleID *uuid.UUID     `json:"vehicle"`
 	Odometer  *DistanceValue `json:"odometer" gorm:"embedded;embedded_prefix:odometer_"`
-	Notes     string         `json:"notes"`
+	Notes     *string        `json:"notes"`
 }
 
 // IsLog satisfies Log interface

@@ -93,7 +93,7 @@
 								</BTableColumn>
 
 								<BTableColumn v-slot="props" field="__typename" label="Log Type" sortable>
-									{{ $store.state.logTypes[props.row.__typename] }}
+									{{ $store.getters.logType(props.row.__typename).name }}
 								</BTableColumn>
 							</BTable>
 						</template>

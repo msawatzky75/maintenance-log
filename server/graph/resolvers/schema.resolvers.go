@@ -93,7 +93,7 @@ func (r *mutationResolver) CreateMaintenanceLog(ctx context.Context, data model.
 	}
 
 	o := model.DistanceValue{Value: &data.Odometer.Value, Type: &data.Odometer.Type}
-	l := model.MaintenanceLog{Date: &data.Date, VehicleID: &v.ID, Odometer: &o, Notes: data.Notes}
+	l := model.MaintenanceLog{Date: &data.Date, VehicleID: &v.ID, Odometer: &o, Notes: &data.Notes}
 
 	if err := tx.Create(&l).Error; err != nil {
 		tx.Rollback()

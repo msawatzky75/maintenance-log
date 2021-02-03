@@ -16,11 +16,9 @@
 			<div class="navbar-menu">
 				<div class="navbar-end">
 					<div v-if="$auth.loggedIn" class="navbar-item has-dropdown is-hoverable">
-						<a class="navbar-link">Profile</a>
+						<a class="navbar-link">{{ $store.state.user.email }}</a>
 
 						<div class="navbar-dropdown is-right">
-							<div class="navbar-item">{{ $store.state.user.email }}</div>
-							<hr class="navbar-divider" />
 							<NuxtLink class="navbar-item" :to="{ name: 'profile' }">Profile</NuxtLink>
 							<a class="navbar-item" @click="$auth.logout()">Logout</a>
 						</div>

@@ -7,7 +7,7 @@
 				</option>
 			</BSelect>
 
-			<BInput v-model.number="innerValue.value" type="number" :placeholder="valuePlaceholder" />
+			<BInput v-model.number="innerValue.value" type="number" :step="step" :placeholder="valuePlaceholder" />
 		</BField>
 	</BField>
 </template>
@@ -35,12 +35,13 @@ export default Vue.extend({
 		label: { type: String, required: false, default: () => null },
 		valuePlaceholder: { type: String, default: () => null },
 		typePlaceholder: { type: String, default: () => null },
+		step: { type: Number, default: 0.001 },
 		schema: {
 			type: Object as () => yup.ObjectSchema<TypeValue>,
 			default: () =>
 				yup.object().shape({
 					type: yup.string().nullable().label('Type').required(),
-					value: yup.number().nullable().label('Value').required(),
+					value: yup.mixed(), // .number().nullable().label('Value').required(),
 				}),
 		},
 	},
@@ -88,6 +89,7 @@ export default Vue.extend({
 				this.errors = []
 			} catch (e) {
 				this.errors = e.errors
+				d('Error validating: ', e.errors)
 				throw e
 			}
 		},

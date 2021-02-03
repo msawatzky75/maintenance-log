@@ -42,6 +42,22 @@
 					<DistanceDisplay v-bind="props.row.odometer" />
 				</BTableColumn>
 
+				<BTableColumn v-slot="props" field="fuelAmount" label="Fuel Amount" sortable>
+					<DistanceDisplay v-bind="props.row.fuelAmount" />
+				</BTableColumn>
+
+				<BTableColumn v-slot="props" field="grade" label="Fuel Grade" sortable>
+					{{ props.row.grade }}
+				</BTableColumn>
+
+				<BTableColumn v-slot="props" field="trip" label="Trip" sortable>
+					<DistanceDisplay v-bind="props.row.trip" />
+				</BTableColumn>
+
+				<BTableColumn v-slot="props" field="efficiency" label="Efficiency" sortable>
+					{{ round(props.row.efficiency.kml, 2) }} km/L
+				</BTableColumn>
+
 				<BTableColumn v-slot="props" field="notes" label="Notes" sortable>
 					{{ props.row.notes }}
 				</BTableColumn>
@@ -128,6 +144,9 @@ export default Vue.extend({
 					}
 				},
 			})
+		},
+		round(value: number, precision: number = 0) {
+			return Math.round(value * Math.pow(10, precision)) / Math.pow(10, precision)
 		},
 	},
 })

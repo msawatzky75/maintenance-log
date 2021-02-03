@@ -18,6 +18,7 @@ query ($id: String!, $logFilter: LogsFilter!) {
         trip { value type }
         fuelAmount { value type }
         fuelPrice { value type }
+        efficiency { kml }
       }
     }
   }

@@ -1,6 +1,6 @@
 <template>
 	<p v-if="value">
-		{{ formatNumber(value) }} {{ short ? $store.state.distanceTypes.find((v) => v.value === type).short : type
+		{{ formatNumber(value) }} {{ short ? $store.state.fluidTypes.find((v) => v.value === type).short : type
 		}}{{ (value > 1 || value === 0) && !short ? 's' : '' }}
 	</p>
 	<p v-else>&mdash;</p>
@@ -11,7 +11,7 @@ import numeral from 'numeral'
 import Vue from 'vue'
 
 export default Vue.extend({
-	name: 'DistanceDisplay',
+	name: 'FluidDisplay',
 	props: {
 		value: {
 			type: Number,

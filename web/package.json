@@ -22,6 +22,7 @@
 		"apollo-link-http": "^1.5.17",
 		"buefy": "^0.9.3",
 		"bulma": "^0.9.0",
+		"chart.js": "^2.9.4",
 		"debug": "^4.1.1",
 		"graphql": "^15.4.0",
 		"graphql-tag": "^2.11.0",
@@ -30,6 +31,7 @@
 		"nuxt": "^2.14.0",
 		"nuxt-buefy": "^0.3.31",
 		"vue": "^2.6.12",
+		"vue-chartjs": "^3.5.1",
 		"yup": "^0.29.3"
 	},
 	"devDependencies": {
