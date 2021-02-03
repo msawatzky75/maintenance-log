@@ -1,25 +1,5 @@
 @import '~bulma/sass/utilities/_all';
-
-$primary: hsla(0, 0, 16%, 1);
-$primary-invert: findColorInvert($primary);
-
-// Links
-// $link: $primary;
-// $link-invert: $primary-invert;
-// $link-focus-border: $primary;
-$text: $grey;
-$text-light: $grey-dark;
-$text-strong: $grey-dark;
-
-// $scheme-main : $black;
-// $scheme-main-bis: $black-bis;
-// $scheme-main-ter: $black-ter;
-
-// $scheme-invert-main: $white;
-// $scheme-invert-main-bis: $white-bis;
-// $scheme-invert-main-ter: $white-ter;
-
-// $background: red;
+@import 'darkly/_variables';
 
 $colors: (
 	"white": ($white, $black),
@@ -35,6 +15,13 @@ $colors: (
 
 $family-cursive: cursive;
 
+// @media(prefers-color-scheme: dark) {
+// 	// one day, maybe... :(
+// }
+// @media(prefers-color-scheme: light) {
+// 	// https://github.com/jgthms/bulma/issues/2342
+// }
+
 body {
 	min-height: 100vh;
 }
@@ -49,3 +36,4 @@ body {
 
 @import '~bulma';
 @import '~buefy/src/scss/buefy';
+@import 'darkly/_overrides';
