@@ -34,6 +34,11 @@ body {
 	font-family: $family-cursive;
 }
 
+pre {
+	background-color: $scheme-main !important;
+	color: $text !important;
+}
+
 @import '~bulma';
 @import '~buefy/src/scss/buefy';
 @import 'darkly/_overrides';

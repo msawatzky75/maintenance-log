@@ -41,7 +41,7 @@ export default Vue.extend({
 			default: () =>
 				yup.object().shape({
 					type: yup.string().nullable().label('Type').required(),
-					value: yup.mixed(), // .number().nullable().label('Value').required(),
+					value: yup.mixed().nullable().label('Value').required(),
 				}),
 		},
 	},
