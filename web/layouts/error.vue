@@ -13,8 +13,8 @@ export default Vue.extend({
 	name: 'Error',
 	props: {
 		error: {
-			type: Object,
-			default: null as { statusCode: number; message: string },
+			type: Object as () => { statusCode: number; message: string },
+			required: true,
 		},
 	},
 })
