@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  server:
+    build: ./server
+    image: msawatzky75/ml-server
+    environment:
+      - POSTGRES_HOST
+      - POSTGRES_PORT
+      - POSTGRES_USER
+      - POSTGRES_DB
+      - POSTGRES_PASSWORD
+      - PORT
+      - HOST_DOMAIN
+      - JWT_SECRET
+      - PASSWORD_HASH_COST
+      - CORS_ORIGIN
+      - LETSENCRYPT_HOST=api.ml.msawatzky75.com
+      - VIRTUAL_HOST=api.ml.msawatzky75.com
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - db
+  web:
+    build: ./web
+    image: msawatzky75/ml-web
+    environment:
+      - API_URL
+      - LETSENCRYPT_HOST=ml.msawatzky75.com
+      - VIRTUAL_HOST=ml.msawatzky75.com
+    ports:
+      - 80:80
+    depends_on:
+      - server
+  db:
+    image: postgres:alpine
+    restart: always
+    env_file: ./server/.env
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL
+      - PGADMIN_DEFAULT_PASSWORD
+    profiles:
+      - development
+    ports:
+      - 3200:80

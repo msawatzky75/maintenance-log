@@ -23,6 +23,13 @@
 							<a class="navbar-item" @click="$auth.logout()">Logout</a>
 						</div>
 					</div>
+					<div v-else class="navbar-item has-dropdown is-hoverable">
+						<a class="navbar-link">Login/Signup</a>
+						<div class="navbar-dropdown is-right">
+							<NuxtLink class="navbar-item" :to="{ name: 'login' }">Login</NuxtLink>
+							<NuxtLink class="navbar-item" :to="{ name: 'signup' }">Signup</NuxtLink>
+						</div>
+					</div>
 				</div>
 			</div>
 		</nav>

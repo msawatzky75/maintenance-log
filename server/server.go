@@ -25,7 +25,8 @@ const defaultPort = "4000"
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		// .env is supported but not required, you can pass in the environment via the system variables instead.
+		log.Print("Error loading .env file")
 	}
 
 	connectionString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
@@ -38,6 +39,7 @@ func main() {
 	db, err := gorm.Open("postgres", connectionString)
 
 	if err != nil {
+		log.Println("Error opening connection to database. Connection string:")
 		log.Println(connectionString)
 		log.Fatal(err)
 	}
