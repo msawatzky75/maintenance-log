@@ -1,9 +1,16 @@
 version: "3.9"
 
+networks:
+  proxy:
+    external:
+      name: proxy
+
 services:
   server:
     build: ./server
     image: msawatzky75/ml-server
+    networks:
+      - proxy
     environment:
       - POSTGRES_HOST
       - POSTGRES_PORT
@@ -25,6 +32,8 @@ services:
   web:
     build: ./web
     image: msawatzky75/ml-web
+    networks:
+      - proxy
     environment:
       - API_URL
       - LETSENCRYPT_HOST=ml.msawatzky75.com
