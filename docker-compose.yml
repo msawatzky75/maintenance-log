@@ -36,7 +36,12 @@ services:
   db:
     image: postgres:alpine
     restart: always
-    env_file: ./server/.env
+    environment:
+      - POSTGRES_HOST
+      - POSTGRES_PORT
+      - POSTGRES_USER
+      - POSTGRES_DB
+      - POSTGRES_PASSWORD
 
   pgadmin:
     image: dpage/pgadmin4
