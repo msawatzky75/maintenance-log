@@ -15,8 +15,9 @@ services:
       - JWT_SECRET
       - PASSWORD_HASH_COST
       - CORS_ORIGIN
-      - LETSENCRYPT_HOST=api.ml.msawatzky75.com
-      - VIRTUAL_HOST=api.ml.msawatzky75.com
+      - LETSENCRYPT_HOST=ml.msawatzky75.com
+      - VIRTUAL_HOST=ml.msawatzky75.com
+      - VIRTUAL_PORT=${PORT}
     ports:
       - ${PORT}:${PORT}
     depends_on:
