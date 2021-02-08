@@ -42,8 +42,6 @@ services:
       - API_URL
       - LETSENCRYPT_HOST=ml.msawatzky75.com
       - VIRTUAL_HOST=ml.msawatzky75.com
-    ports:
-      - 80:80
     depends_on:
       - server
   db:
@@ -57,12 +55,12 @@ services:
       - POSTGRES_USER
       - POSTGRES_DB
       - POSTGRES_PASSWORD
-    ports:
-      - 5432:5432
 
   pgadmin:
     image: dpage/pgadmin4
     restart: always
+    networks:
+      - default
     environment:
       - PGADMIN_DEFAULT_EMAIL
       - PGADMIN_DEFAULT_PASSWORD
