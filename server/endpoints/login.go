@@ -3,6 +3,7 @@ package endpoints
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -126,7 +127,7 @@ func (l *Login) createAccessTokenCookie(userID string) (*http.Cookie, error) {
 		Value:    accessTokenString,
 		MaxAge:   int(l.AccessTokenLife.Round(time.Minute).Seconds()),
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   os.Getenv("APP_ENV") != "DEVELOPMENT",
 		Domain:   l.CookieDomain,
 		Path:     "/graphql",
 		SameSite: http.SameSiteStrictMode,
@@ -147,7 +148,7 @@ func (l *Login) createRefreshTokenCookie(userID string) (*http.Cookie, error) {
 		Value:    refreshTokenString,
 		MaxAge:   int(l.RefreshTokenLife.Round(time.Minute).Seconds()),
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   os.Getenv("APP_ENV") != "DEVELOPMENT",
 		Domain:   l.CookieDomain,
 		Path:     "/api/auth/refresh",
 		SameSite: http.SameSiteStrictMode,

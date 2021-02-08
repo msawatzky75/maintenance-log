@@ -34,7 +34,7 @@
 				<BButton type="is-primary" native-type="submit">Sign Up</BButton>
 			</div>
 		</form>
-		<pre v-if="networkErorr">{{ networkErorr }}</pre>
+		<pre v-if="networkError">{{ networkError }}</pre>
 	</section>
 </template>
 
@@ -89,7 +89,9 @@ export default {
 				const response = await this.$axios.put('/api/signup', {
 					email: this.user.email,
 					password: this.user.password,
+					// credentials: 'omit',
 				})
+				d('this should not be undefined', response)
 				// 200 OK
 				if (response.status === 200) {
 					this.$auth

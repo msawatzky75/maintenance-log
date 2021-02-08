@@ -1,6 +1,8 @@
 package middleware
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // Cors is the configuration for the cors middleware
 type Cors struct {

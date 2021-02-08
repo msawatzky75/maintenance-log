@@ -56,8 +56,8 @@ export default {
 	],
 
 	axios: {
-		baseURL: 'http://localhost:4000/',
-		browserBaseURL: 'http://localhost:4000/',
+		baseURL: process.env.API_URL,
+		browserBaseURL: process.env.API_URL,
 		credentials: true,
 	},
 
@@ -103,6 +103,11 @@ export default {
 		},
 	},
 
+	env: {
+		API_URL: process.env.API_URL,
+		API_URL_GRAPHQL: process.env.API_URL + 'graphql',
+	},
+
 	apollo: {
 		clientConfigs: {
 			default: '~/apollo/client-configs/default.ts',
@@ -117,7 +122,7 @@ export default {
 	 ** See https://nuxtjs.org/api/configuration-build/
 	 */
 	build: {
-		extend(config, ctx) {
+		extend(config: any, ctx: any) {
 			if (ctx.isDev) {
 				config.devtool = ctx.isClient ? 'source-map' : 'inline-source-map'
 			}

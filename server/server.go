@@ -77,6 +77,7 @@ func main() {
 		Secret:             []byte(os.Getenv("JWT_SECRET")),
 	}
 	corsMiddleware := middleware.Cors{Cors: os.Getenv("CORS_ORIGIN")}
+	dbgf("CORS: %s", os.Getenv("CORS_ORIGIN"))
 	loginEndpoint := endpoints.Login{
 		DB:                 db,
 		JWTSecret:          []byte(os.Getenv("JWT_SECRET")),
@@ -91,7 +92,7 @@ func main() {
 	}
 
 	// Don't want the playground in prod
-	if os.Getenv("APP_ENV") == "dev" || os.Getenv("APP_ENV") == "development" {
+	if os.Getenv("APP_ENV") == "DEVELOPMENT" {
 		http.Handle("/graphiql", playground.Handler("GraphQL playground", "/graphql"))
 		log.Printf("connect to http://localhost:%s/graphiql for GraphQL playground", port)
 	}

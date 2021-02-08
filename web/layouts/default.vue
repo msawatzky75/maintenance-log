@@ -50,8 +50,9 @@ const d = debug('ml.layouts.default')
 export default {
 	middleware: [
 		'auth',
-		async function ({ store }) {
-			if (!store.user) {
+		async function ({ store, $auth }) {
+			d('logged in:', $auth.loggedIn)
+			if (!store.user && $auth.loggedIn) {
 				await store.dispatch('user/fetchUser')
 			}
 		},
