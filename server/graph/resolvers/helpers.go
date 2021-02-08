@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/jinzhu/gorm"
 	"github.com/msawatzky75/maintenance-log/server/graph/model"
 	uuid "github.com/satori/go.uuid"
+	"gorm.io/gorm"
 )
 
 // ValidateVehicle validates and returns a vehicle based on id
 func ValidateVehicle(id string, db *gorm.DB) (*model.Vehicle, error) {
 	var v model.Vehicle
-	var c int
+	var c int64
 
 	i, e := uuid.FromString(id)
 	if e != nil {

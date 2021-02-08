@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/jinzhu/gorm"
 	"github.com/msawatzky75/maintenance-log/server/graph/model"
+	"gorm.io/gorm"
 )
 
 // Signup contains the options for the signup endpoints
