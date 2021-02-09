@@ -12,11 +12,11 @@ function isServerError(e: any): e is ServerError {
 
 export default function ({
 	$auth,
-	env,
+	$config,
 	...rest
 }: {
 	$auth: { refreshTokens: Function }
-	env: { API_URL_GRAPHQL: string }
+	$config: { API_URL_GRAPHQL: string }
 }) {
 	const link = onError(({ networkError }) => {
 		if (networkError && $auth) {
@@ -34,7 +34,7 @@ export default function ({
 	// )
 
 	return {
-		httpEndpoint: env.API_URL_GRAPHQL,
+		httpEndpoint: $config.API_URL_GRAPHQL,
 		httpLinkOptions: {
 			credentials: 'include',
 		},

@@ -1,10 +1,10 @@
 export default {
-	ssr: false,
+	ssr: true,
 	/*
 	 ** Nuxt target
 	 ** See https://nuxtjs.org/api/configuration-target
 	 */
-	target: 'static',
+	target: 'server',
 	/*
 	 ** Headers of the page
 	 ** See https://nuxtjs.org/api/configuration-head
@@ -56,8 +56,8 @@ export default {
 	],
 
 	axios: {
-		baseURL: process.env.API_URL,
-		browserBaseURL: process.env.API_URL,
+		// baseURL: process.env.API_URL,
+		// browserBaseURL: process.env.API_URL,
 		credentials: true,
 	},
 
@@ -103,9 +103,13 @@ export default {
 		},
 	},
 
-	env: {
+	publicRuntimeConfig: {
 		API_URL: process.env.API_URL,
 		API_URL_GRAPHQL: process.env.API_URL + 'graphql',
+		axios: {
+			baseURL: process.env.API_URL,
+			browserBaseURL: process.env.API_URL,
+		},
 	},
 
 	apollo: {

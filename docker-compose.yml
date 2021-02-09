@@ -39,7 +39,7 @@ services:
       - proxy
       - default
     environment:
-      - API_URL
+      - API_URL=http://server:3400/
       - LETSENCRYPT_HOST=ml.msawatzky75.com
       - VIRTUAL_HOST=ml.msawatzky75.com
     depends_on:
