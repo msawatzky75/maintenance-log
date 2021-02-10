@@ -1,10 +1,10 @@
 export default {
-	ssr: false,
+	ssr: true,
 	/*
 	 ** Nuxt target
 	 ** See https://nuxtjs.org/api/configuration-target
 	 */
-	target: 'static',
+	target: 'server',
 	/*
 	 ** Headers of the page
 	 ** See https://nuxtjs.org/api/configuration-head
@@ -56,8 +56,8 @@ export default {
 	],
 
 	axios: {
-		baseURL: 'http://localhost:4000/',
-		browserBaseURL: 'http://localhost:4000/',
+		// baseURL: process.env.API_URL,
+		// browserBaseURL: process.env.API_URL,
 		credentials: true,
 	},
 
@@ -103,6 +103,15 @@ export default {
 		},
 	},
 
+	publicRuntimeConfig: {
+		API_URL: process.env.API_URL,
+		API_URL_GRAPHQL: process.env.API_URL + 'graphql',
+		axios: {
+			baseURL: process.env.API_URL,
+			browserBaseURL: process.env.API_URL,
+		},
+	},
+
 	apollo: {
 		clientConfigs: {
 			default: '~/apollo/client-configs/default.ts',
@@ -117,7 +126,7 @@ export default {
 	 ** See https://nuxtjs.org/api/configuration-build/
 	 */
 	build: {
-		extend(config, ctx) {
+		extend(config: any, ctx: any) {
 			if (ctx.isDev) {
 				config.devtool = ctx.isClient ? 'source-map' : 'inline-source-map'
 			}

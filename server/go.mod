@@ -5,7 +5,6 @@ go 1.14
 require (
 	github.com/99designs/gqlgen v0.11.3
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/jinzhu/gorm v1.9.15
 	github.com/joho/godotenv v1.3.0
 	github.com/labstack/gommon v0.3.0
 	github.com/satori/go.uuid v1.2.0
@@ -15,4 +14,6 @@ require (
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
 	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
 	gopkg.in/yaml.v2 v2.2.7 // indirect
+	gorm.io/driver/postgres v1.0.8
+	gorm.io/gorm v1.20.12
 )

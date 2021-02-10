@@ -1,9 +1,5 @@
-import {
-	InMemoryCache,
-	IntrospectionFragmentMatcher,
-} from 'apollo-cache-inmemory'
+import { InMemoryCache, IntrospectionFragmentMatcher } from 'apollo-cache-inmemory'
 import { onError } from 'apollo-link-error'
-import { HttpLink } from 'apollo-link-http'
 import type { ServerError } from 'apollo-link-http-common'
 import debug from 'debug'
 import introspectionQueryResultData from './fragments.json'
@@ -16,9 +12,11 @@ function isServerError(e: any): e is ServerError {
 
 export default function ({
 	$auth,
+	$config,
 	...rest
 }: {
 	$auth: { refreshTokens: Function }
+	$config: { API_URL_GRAPHQL: string }
 }) {
 	const link = onError(({ networkError }) => {
 		if (networkError && $auth) {
@@ -27,15 +25,19 @@ export default function ({
 				$auth.refreshTokens()
 			}
 		}
-	}).concat(
-		new HttpLink({
-			uri: 'http://localhost:4000/graphql',
-			credentials: 'include',
-		})
-	)
+	})
+	// .concat(
+	// 	new HttpLink({
+	// 		uri: process.env.API_URL ? process.env.API_URL + '/graphql' : 'http://localhost:4000/graphql',
+	// 		credentials: 'include',
+	// 	})
+	// )
 
 	return {
-		httpEndpoint: 'http://localhost:4000/graphql',
+		httpEndpoint: $config.API_URL_GRAPHQL,
+		httpLinkOptions: {
+			credentials: 'include',
+		},
 		link,
 		cache: new InMemoryCache({
 			fragmentMatcher: new IntrospectionFragmentMatcher({

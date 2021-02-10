@@ -6,10 +6,10 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/jinzhu/gorm"
 	"github.com/labstack/gommon/log"
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type User struct {
@@ -68,7 +68,7 @@ func CreateUser(db *gorm.DB, email string, password string) (User, error) {
 		return u, ErrInvalidPassword
 	}
 
-	var c int
+	var c int64
 	db.Model(User{}).Where("email = ?", email).Count(&c)
 	if c != 0 {
 		return u, ErrEmailExists

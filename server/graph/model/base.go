@@ -3,8 +3,8 @@ package model
 import (
 	"time"
 
-	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
+	"gorm.io/gorm"
 )
 
 type BaseWithTimestamps struct {
@@ -15,9 +15,9 @@ type BaseWithTimestamps struct {
 }
 
 // BeforeCreate will set a UUID rather than numeric ID.
-func (base *BaseWithTimestamps) BeforeCreate(scope *gorm.Scope) error {
-	uuid := uuid.NewV4().String()
-	return scope.SetColumn("ID", uuid)
+func (base *BaseWithTimestamps) BeforeCreate(tx *gorm.DB) error {
+	base.ID = uuid.NewV4()
+	return nil
 }
 
 type Base struct {
@@ -25,7 +25,7 @@ type Base struct {
 }
 
 // BeforeCreate will set a UUID rather than numeric ID.
-func (base *Base) BeforeCreate(scope *gorm.Scope) error {
-	uuid := uuid.NewV4().String()
-	return scope.SetColumn("ID", uuid)
+func (base *Base) BeforeCreate(tx *gorm.DB) error {
+	base.ID = uuid.NewV4()
+	return nil
 }

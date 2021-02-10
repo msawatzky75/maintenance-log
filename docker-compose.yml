@@ -1,0 +1,70 @@
+version: "3.9"
+
+networks:
+  default:
+  proxy:
+    external:
+      name: proxy
+
+services:
+  server:
+    build: ./server
+    image: msawatzky75/ml-server
+    networks:
+      - proxy
+      - default
+    environment:
+      - LOG_LEVEL
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT
+      - POSTGRES_USER
+      - POSTGRES_DB
+      - POSTGRES_PASSWORD
+      - PORT
+      - HOST_DOMAIN
+      - JWT_SECRET
+      - PASSWORD_HASH_COST
+      - CORS_ORIGIN
+      - LETSENCRYPT_HOST=ml.msawatzky75.com
+      - VIRTUAL_HOST=ml.msawatzky75.com
+      - VIRTUAL_PORT=${PORT}
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - db
+  web:
+    build: ./web
+    image: msawatzky75/ml-web
+    networks:
+      - proxy
+      - default
+    environment:
+      - API_URL=http://server:3400/
+      - LETSENCRYPT_HOST=ml.msawatzky75.com
+      - VIRTUAL_HOST=ml.msawatzky75.com
+    depends_on:
+      - server
+  db:
+    image: postgres:alpine
+    networks:
+      - default
+    restart: always
+    environment:
+      - POSTGRES_HOST
+      - POSTGRES_PORT
+      - POSTGRES_USER
+      - POSTGRES_DB
+      - POSTGRES_PASSWORD
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    networks:
+      - default
+    environment:
+      - PGADMIN_DEFAULT_EMAIL
+      - PGADMIN_DEFAULT_PASSWORD
+    profiles:
+      - development
+    ports:
+      - 3200:80
